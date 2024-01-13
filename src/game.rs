@@ -92,7 +92,7 @@ impl PlayerState {
 
     pub fn place(&mut self, m: &Move, other: &mut PlayerState) -> bool {
         self.hand.remove(m.piece);
-        self.move_list.push(m.clone());
+        self.move_list.push(*m);
         self.occupied |= m.mask();
         if self.owned.intersects(m.mask().get_adjacent_mask()) {
             self.owned |= m.mask();
@@ -101,6 +101,11 @@ impl PlayerState {
         let mut capture_flag = false;
 
         let group = self.occupied.find_group(m.mask().to_square());
+        // This is wrong. A territory can be captured by surround spaces along "up to 2" walls.
+        // (Keep in mind that no opposite-board connections are allowed.)
+        // So, maybe the correct rules are that the potential territory is:
+        // - surrounded by group (if zero wall loop captures allowed)
+        // - surrounded by 1 or 2 walls and the group
         if let Some(opposite) = find_opposite_corner(group, m) {
             let territory = find_territory(self.occupied, group, opposite);
             if territory != EMPTY {
@@ -128,6 +133,14 @@ impl PlayerState {
 
     pub fn points(&self) -> u32 {
         self.occupied.popcnt()
+    }
+
+    pub fn moves_str(&self) -> String {
+        self.move_list
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
     }
 }
 
@@ -160,22 +173,24 @@ impl Board {
     }
 
     pub fn print_color_map(&self) {
+        println!("   A B C D E F G H");
         for y in ALL_Y {
+            print!(" {} ", y.to_index() + 1);
             for x in ALL_X {
-                let pos = BitBoard::set(x, y);
                 print!(
                     "{:} ",
-                    if self.black.occupied & pos == pos {
+                    if self.black.occupied.test(x, y) {
                         "X"
-                    } else if self.white.occupied & pos == pos {
+                    } else if self.white.occupied.test(x, y) {
                         "O"
                     } else {
                         "."
                     }
                 );
             }
-            println!("")
+            println!("{}", y.to_index() + 1);
         }
+        println!("   A B C D E F G H");
     }
 
     fn redraw_rays(&mut self) {
@@ -184,7 +199,7 @@ impl Board {
         ms.extend(self.white.move_list.clone());
         ms.iter().for_each(|m| {
             if m.piece == PieceId::Boss {
-                self.draw_boss_rays(&m);
+                self.draw_boss_rays(m);
             } else {
                 self.rays.draw(m.gaze().to_square(), m.orientation());
             }
@@ -218,8 +233,8 @@ impl Board {
         // x if boss, add to boss
         // x if connection: capture and mark territory
         let capture_flag = match m.color {
-            Color::Black => self.black.place(&m, &mut self.white),
-            Color::White => self.white.place(&m, &mut self.black),
+            Color::Black => self.black.place(m, &mut self.white),
+            Color::White => self.white.place(m, &mut self.black),
         };
         if m.piece == PieceId::Boss {
             self.boss |= m.mask();
@@ -387,11 +402,11 @@ impl State {
         println!("Black:");
         print!("- hand: ");
         self.board.black.hand.dump();
-        println!("- moves: {:?}", self.board.black.move_list);
+        println!("- moves: {}", self.board.black.moves_str());
 
         println!("White:");
         print!("- hand: ");
         self.board.white.hand.dump();
-        println!("- moves: {:?}", self.board.white.move_list);
+        println!("- moves: {}", self.board.white.moves_str());
     }
 }

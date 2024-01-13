@@ -149,12 +149,12 @@ impl Square {
     }
 
     #[inline]
-    pub fn to_int(&self) -> u8 {
+    pub fn to_int(self) -> u8 {
         self.0
     }
 
     #[inline]
-    pub fn to_index(&self) -> usize {
+    pub fn to_index(self) -> usize {
         self.0 as usize
     }
 }
@@ -164,8 +164,8 @@ impl fmt::Display for Square {
         write!(
             f,
             "{}{}",
-            (('a' as u8) + ((self.0 & 7) as u8)) as char,
-            (('1' as u8) + ((self.0 >> 3) as u8)) as char
+            (b'a' + (self.0 & 7)) as char,
+            (b'1' + (self.0 >> 3)) as char
         )
     }
 }

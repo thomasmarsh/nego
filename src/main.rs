@@ -49,12 +49,10 @@ impl minimax::Game for Nego {
 
         if b == w {
             Some(minimax::Winner::Draw)
+        } else if b > w && state.current == Color::White {
+            Some(minimax::Winner::PlayerJustMoved)
         } else {
-            if b > w && state.current == Color::White {
-                Some(minimax::Winner::PlayerJustMoved)
-            } else {
-                Some(minimax::Winner::PlayerToMove)
-            }
+            Some(minimax::Winner::PlayerToMove)
         }
     }
 
@@ -90,7 +88,7 @@ impl minimax::Game for Nego {
 
         let pos = format!(
             "{}{}",
-            ((b'A' + m.position().get_x().to_int()) as char).to_string(),
+            ((b'A' + m.position().get_x().to_int()) as char),
             m.position().get_y().to_int() as u16 + 1
         );
 
@@ -108,7 +106,7 @@ impl State {
         for &m in &ma.0 {
             trace!("{:?}", m);
         }
-        if ma.0.len() == 0 {
+        if ma.0.is_empty() {
             None
         } else {
             let mut rng = rand::thread_rng();
@@ -121,12 +119,6 @@ impl State {
 
 #[derive(Clone)]
 struct Eval;
-
-impl Default for Eval {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl minimax::Evaluator for Eval {
     type G = Nego;
@@ -187,7 +179,7 @@ fn demo_minimax() {
 
     // Iterative
     let mut strategy =
-        minimax::IterativeSearch::new(Eval::default(), minimax::IterativeOptions::new().verbose());
+        minimax::IterativeSearch::new(Eval, minimax::IterativeOptions::new().verbose());
     strategy.set_timeout(std::time::Duration::from_secs(10));
 
     // Negamax
@@ -204,7 +196,7 @@ fn demo_minimax() {
     let mut state = State::new();
     let mut s = 0;
     loop {
-        if !Nego::get_winner(&state).is_none() {
+        if Nego::get_winner(&state).is_some() {
             break;
         }
         state.dump();

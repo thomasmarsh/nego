@@ -4,6 +4,24 @@ use crate::orientation::Orientation;
 use crate::pieces::PieceId;
 use crate::square::Square;
 
+use std::fmt;
+
+#[derive(PartialEq, Clone, Copy, Debug, Eq)]
+pub enum Color {
+    Black,
+    White,
+}
+
+impl Color {
+    pub fn next(&self) -> Color {
+        use Color::*;
+        match self {
+            Black => White,
+            White => Black,
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Move {
     pub color: Color,    // 1 bit
@@ -29,19 +47,15 @@ impl Move {
     }
 }
 
-#[derive(PartialEq, Clone, Copy, Debug, Eq)]
-pub enum Color {
-    Black,
-    White,
-}
-
-impl Color {
-    pub fn next(&self) -> Color {
-        use Color::*;
-        match self {
-            Black => White,
-            White => Black,
-        }
+impl fmt::Display for Move {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}:{}{:?}",
+            self.piece.piece_type_id().notation(),
+            self.position().to_string().to_uppercase(),
+            self.orientation()
+        )
     }
 }
 

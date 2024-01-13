@@ -97,6 +97,22 @@ impl PieceTypeId {
             PieceTypeId::Kunoji4 => &KUNOJI4_T,
         }
     }
+
+    pub fn notation(&self) -> String {
+        match self {
+            PieceTypeId::Boss => "BOS",
+            PieceTypeId::Mame => "MAM",
+            PieceTypeId::Nobi => "NOB",
+            PieceTypeId::Koubaku1 => "KB1",
+            PieceTypeId::Koubaku2 => "KB2",
+            PieceTypeId::Koubaku3 => "KB3",
+            PieceTypeId::Kunoji1 => "KJ1",
+            PieceTypeId::Kunoji2 => "KJ2",
+            PieceTypeId::Kunoji3 => "KJ3",
+            PieceTypeId::Kunoji4 => "KJ4",
+        }
+        .to_string()
+    }
 }
 
 impl PieceId {
@@ -180,7 +196,7 @@ impl PieceList {
             let name = format!("{:?}", piece_type).to_lowercase();
             print!("{}={} ", name, counts[piece_type as usize]);
         }
-        println!("");
+        println!();
     }
 }
 

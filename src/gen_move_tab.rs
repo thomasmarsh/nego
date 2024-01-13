@@ -2,12 +2,12 @@ mod bitboard;
 mod coord;
 mod error;
 mod game;
+mod r#move;
 mod move_tab;
 mod orientation;
 mod pieces;
 mod ray;
 mod square;
-mod walk;
 mod zobrist;
 
 use crate::bitboard::BitBoard;
@@ -118,22 +118,11 @@ struct Placement {
 
 impl Placement {
     fn notation(&self) -> String {
-        let piece = match self.piece {
-            PieceTypeId::Boss => "BOS",
-            PieceTypeId::Mame => "MAM",
-            PieceTypeId::Nobi => "NOB",
-            PieceTypeId::Koubaku1 => "KB1",
-            PieceTypeId::Koubaku2 => "KB2",
-            PieceTypeId::Koubaku3 => "KB3",
-            PieceTypeId::Kunoji1 => "KJ1",
-            PieceTypeId::Kunoji2 => "KJ2",
-            PieceTypeId::Kunoji3 => "KJ3",
-            PieceTypeId::Kunoji4 => "KJ4",
-        };
+        let piece = self.piece.notation();
 
         let pos = format!(
             "{}{}",
-            ((b'A' + self.position.get_x().to_int()) as char).to_string(),
+            ((b'A' + self.position.get_x().to_int()) as char),
             self.position.get_y().to_int() as u16 + 1
         );
 
@@ -160,7 +149,7 @@ impl fmt::Display for Placement {
             };
             write!(f, "{} ", x)?;
             if square.get_x() == X::X7 {
-                write!(f, "\n")?;
+                writeln!(f)?;
             }
         }
         write!(f, "")

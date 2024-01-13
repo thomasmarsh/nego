@@ -1,5 +1,5 @@
 use crate::bitboard::{BitBoard, EMPTY};
-use crate::coord::X;
+use crate::coord::{ALL_X, ALL_Y, X};
 use crate::orientation::{Orientation, ALL_ORIENTATIONS};
 use crate::square::{Square, ALL_SQUARES};
 
@@ -116,38 +116,37 @@ impl Rays {
     }
 }
 
-// TODO!
 impl fmt::Display for Rays {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use Orientation::*;
-        write!(f, "  A B C D E F G H\n")?;
-        for square in ALL_SQUARES {
-            if square.get_x() == X::X1 {
-                write!(f, " {} ", square.get_y().to_index() + 1)?;
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s: String = "".to_owned();
+        s.push_str("   A B C D E F G H\n");
+        for y in ALL_Y {
+            s.push_str(format!(" {} ", y.to_index() + 1).as_str());
+            for x in ALL_X {
+                let square = Square::make_square(x, y);
+                let os: usize = ALL_ORIENTATIONS.iter().fold(0, |acc, o| {
+                    let is_set = self.is_set(square, *o);
+                    if is_set {
+                        acc | (1 << *o as usize)
+                    } else {
+                        acc
+                    }
+                });
+                let c = match os.count_ones() {
+                    0 => ".",
+                    1 => match Orientation::from_index(os.trailing_zeros() as u8) {
+                        Orientation::S => "v",
+                        Orientation::W => "<",
+                        Orientation::N => "^",
+                        Orientation::E => ">",
+                    },
+                    _ => "x",
+                };
+                s.push_str(format!("{} ", c).as_str());
             }
-            let mut os: u8 = 0;
-            for o in ALL_ORIENTATIONS {
-                let is_set = self.is_set(square, o);
-                if is_set {
-                    os |= 1 << o as usize;
-                }
-            }
-            let c = match os.count_ones() {
-                0 => ".",
-                1 => match Orientation::from_index(os.trailing_zeros() as u8) {
-                    S => "v",
-                    W => "<",
-                    N => "^",
-                    E => ">",
-                },
-                _ => "x",
-            };
-            write!(f, "{} ", c)?;
-            if square.get_x() == X::X7 {
-                write!(f, " {}\n", square.get_y().to_index() + 1)?;
-            }
+            s.push_str(format!("{}\n", y.to_index() + 1).as_str());
         }
-        write!(f, "  A B C D E F G H\n")?;
-        write!(f, "")
+        s.push_str("   A B C D E F G H\n");
+        write!(f, "{}", s)
     }
 }

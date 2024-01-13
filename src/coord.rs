@@ -62,13 +62,13 @@ impl X {
 
     /// Convert this `X` into a `usize` between 0 and 7 (inclusive).
     #[inline]
-    pub fn to_index(&self) -> usize {
-        *self as usize
+    pub fn to_index(self) -> usize {
+        self as usize
     }
 
     #[inline]
-    pub fn to_int(&self) -> u8 {
-        *self as u8
+    pub fn to_int(self) -> u8 {
+        self as u8
     }
 }
 
@@ -76,7 +76,7 @@ impl FromStr for X {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() < 1 {
+        if s.is_empty() {
             return Err(Error::InvalidRank);
         }
         match s.chars().next().unwrap() {
@@ -149,13 +149,13 @@ impl Y {
 
     /// Convert this `Y` into a `usize` from 0 to 7 inclusive.
     #[inline]
-    pub fn to_index(&self) -> usize {
-        *self as usize
+    pub fn to_index(self) -> usize {
+        self as usize
     }
 
     #[inline]
-    pub fn to_int(&self) -> u8 {
-        *self as u8
+    pub fn to_int(self) -> u8 {
+        self as u8
     }
 }
 
@@ -163,7 +163,7 @@ impl FromStr for Y {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() < 1 {
+        if s.is_empty() {
             return Err(Error::InvalidRank);
         }
         match s.chars().next().unwrap() {

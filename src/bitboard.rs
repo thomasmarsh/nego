@@ -121,9 +121,9 @@ impl BitBoard {
 
         while queue != 0 {
             let mut next_queue = 0;
-            for i in 0..64 {
+            for (i, mask) in NEIGHBOR_MASK.iter().enumerate() {
                 if (queue & (1u64 << i)) != 0 {
-                    let neighbors = NEIGHBOR_MASK[i] & self.0 & !flood;
+                    let neighbors = mask & self.0 & !flood;
                     flood |= neighbors;
                     next_queue |= neighbors;
                     if (flood & n != 0 && flood & s != 0) || (flood & w != 0 && flood & e != 0) {
@@ -148,9 +148,9 @@ impl BitBoard {
 
         while queue != 0 {
             let mut next_queue = 0;
-            for i in 0..64 {
+            for (i, mask) in NEIGHBOR_MASK.iter().enumerate() {
                 if (queue & (1u64 << i)) != 0 {
-                    let neighbors = NEIGHBOR_MASK[i] & !self.0 & !flood;
+                    let neighbors = mask & !self.0 & !flood;
                     flood |= neighbors;
                     next_queue |= neighbors;
                 }
@@ -622,7 +622,7 @@ impl BitBoard {
     pub fn from_indices_vec(xs: Vec<(usize, usize)>) -> BitBoard {
         let mut b = BitBoard::empty();
         for (rx, ry) in xs {
-            b = b | BitBoard::from_indices(rx, ry);
+            b |= BitBoard::from_indices(rx, ry);
         }
         b
     }
@@ -636,30 +636,30 @@ impl BitBoard {
     /// Convert an `Option<Square>` to an `Option<BitBoard>`
     #[inline]
     pub fn from_maybe_square(sq: Option<Square>) -> Option<BitBoard> {
-        sq.map(|s| BitBoard::from_square(s))
+        sq.map(BitBoard::from_square)
     }
 
     /// Convert a `BitBoard` to a `Square`.  This grabs the least-significant `Square`
     #[inline]
-    pub fn to_square(&self) -> Square {
+    pub fn to_square(self) -> Square {
         Square::new(self.0.trailing_zeros() as u8)
     }
 
     /// Count the number of `Squares` set in this `BitBoard`
     #[inline]
-    pub fn popcnt(&self) -> u32 {
+    pub fn popcnt(self) -> u32 {
         self.0.count_ones()
     }
 
     /// Reverse this `BitBoard`.  Look at it from the opponents perspective.
     #[inline]
-    pub fn reverse_colors(&self) -> BitBoard {
+    pub fn reverse_colors(self) -> BitBoard {
         BitBoard(self.0.swap_bytes())
     }
 
     /// Convert this `BitBoard` to a `usize` (for table lookups)
     #[inline]
-    pub fn to_size(&self, rightshift: u8) -> usize {
+    pub fn to_size(self, rightshift: u8) -> usize {
         (self.0 >> rightshift) as usize
     }
 
