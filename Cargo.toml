@@ -1,0 +1,32 @@
+[package]
+name = "nego"
+version = "0.1.0"
+edition = "2021"
+default-run = "nego"
+
+
+[[bin]]
+name = "nego"
+path = "src/main.rs"
+
+[[bin]]
+name = "gen_move_tab"
+path = "src/gen_move_tab.rs"
+
+[profile.release]
+debug = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4"
+minimax = { path = "../minimax-rs" }
+pretty_env_logger = "0.5.0"
+rand = "0.8.5"
+
+## Core library
+#relm4 = "0.6.2"
+## Optional: reusable components
+#relm4-components = "0.6.2"
+## Optional: icons
+#relm4-icons = { version = "0.6.0", features = ["plus"] }
