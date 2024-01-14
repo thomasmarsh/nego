@@ -162,7 +162,7 @@ pub struct MoveAccumulator(pub Vec<Move>);
 
 impl MoveAccumulator {
     pub fn new() -> Self {
-        Self(Vec::with_capacity(1720))
+        Self(Vec::with_capacity(1720 >> 1))
     }
 }
 

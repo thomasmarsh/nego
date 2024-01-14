@@ -25,9 +25,7 @@ fn is_captured(area: BitBoard, group: BitBoard) -> bool {
     let e = BitBoard(0x8080808080808080);
 
     !(area.intersects(s) && area.intersects(n) || area.intersects(e) && area.intersects(w))
-    // !(area.intersects(s) && area.intersects(n))
-    //     && !(area.intersects(e) && area.intersects(w))
-    //     && area.get_adjacent_mask().intersects(group)
+        && area.get_adjacent_mask().intersects(group)
 }
 
 // fn find_territory(b: BitBoard, group: BitBoard) -> (BitBoard, Vec<BitBoard>) {
@@ -76,9 +74,6 @@ impl PlayerState {
         self.hand.remove(m.piece);
         self.move_list.push(*m);
         self.occupied |= m.mask();
-        if self.owned.intersects(m.mask().get_adjacent_mask()) {
-            self.owned |= m.mask();
-        }
 
         let mut capture_flag = false;
 
@@ -94,14 +89,7 @@ impl PlayerState {
         }
         if territory != EMPTY {
             // The new territory is the potential territory minus any existing territory
-            let new = (group | territory) ^ (self.owned | other.owned);
-
-            // Mark as owned all this color's pieces which are within the captured territory.
-            self.move_list.iter().for_each(|x| {
-                if x.mask().intersects(new) {
-                    self.owned |= x.mask();
-                }
-            });
+            let new = (group | territory) & !(self.owned | other.owned);
 
             // Look for pieces to remove
             other.move_list.retain_mut(|x| {
@@ -109,15 +97,33 @@ impl PlayerState {
                 if x.piece != PieceId::Boss && new.intersects(x.mask()) {
                     // Remove from occupied map
                     other.occupied &= !x.mask();
+
                     // Add piece back to hand
                     other.hand.add(x.piece);
+
+                    // Remember to rehash the move list
                     capture_flag = true;
+
+                    // Remove from move list
                     return false;
                 }
+
+                // Don't remove from move list
                 true
             });
+
             self.owned |= new;
+
+            // Mark as owned all this color's pieces which are within the captured territory.
+            self.move_list.iter().for_each(|x| {
+                if x.mask().intersects(new) {
+                    self.owned |= x.mask();
+                }
+            });
+        } else if self.owned.intersects(m.mask().get_adjacent_mask()) {
+            self.owned |= m.mask();
         }
+
         // }
         capture_flag
     }
