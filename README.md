@@ -8,6 +8,6 @@ included in the product description on [Koncent](https://koncent.jp/view/item/00
 
 This builds on minimax-rs which provide minimax and MCTS style searches.
 
-There are some gaps in the rules sheet addressed in the [QUESTIONS](QUESTIONS.md) doc.
+There are some gaps in the rules sheet addressed in the [QUESTIONS](doc/QUESTIONS.md) doc.
 
 The implementation is pretty rough right now.
