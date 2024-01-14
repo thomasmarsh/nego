@@ -213,7 +213,7 @@ fn demo_minimax() {
     // let opts = minimax::MCTSOptions::default().verbose();
     // let mut strategy: minimax::MonteCarloTreeSearch<Nego> =
     // minimax::MonteCarloTreeSearch::new(opts);
-    // strategy.set_timeout(Duration::from_secs(20));
+    // strategy.set_timeout(Duration::from_secs(10));
 
     //let mut strategies = [&rand, &iterative];
 

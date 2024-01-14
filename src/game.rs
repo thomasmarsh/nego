@@ -190,6 +190,27 @@ impl Board {
         println!("   A B C D E F G H");
     }
 
+    pub fn print_owner_map(&self) {
+        println!("   A B C D E F G H");
+        for y in ALL_Y {
+            print!(" {} ", y.to_index() + 1);
+            for x in ALL_X {
+                print!(
+                    "{:} ",
+                    if self.black.owned.test(x, y) {
+                        "X"
+                    } else if self.white.owned.test(x, y) {
+                        "O"
+                    } else {
+                        "."
+                    }
+                );
+            }
+            println!("{}", y.to_index() + 1);
+        }
+        println!("   A B C D E F G H");
+    }
+
     fn redraw_rays(&mut self) {
         self.rays.clear();
         let mut ms = self.black.move_list.clone();
@@ -399,7 +420,7 @@ impl State {
         println!("Occupied:");
         println!("{}", self.board.occupied());
         println!("Owned:");
-        println!("{}", self.board.owned());
+        self.board.print_owner_map();
 
         println!("Black:");
         print!("- hand: ");

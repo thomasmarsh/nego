@@ -7,16 +7,90 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, M
 #[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash)]
 pub struct BitBoard(pub u64);
 
-#[allow(dead_code)]
 pub const EMPTY: BitBoard = BitBoard(0);
 
-const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe); // Excludes the a-file (leftmost column)
-const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f); // Excludes the h-file (rightmost column)
-
 impl BitBoard {
+    /// Construct a new bitboard from a u64
     #[inline]
-    pub fn empty() -> Self {
-        Self(0)
+    pub fn new(b: u64) -> BitBoard {
+        BitBoard(b)
+    }
+
+    /// Construct a new `BitBoard` with a particular `Square` set
+    #[inline]
+    pub fn set(x: X, y: Y) -> BitBoard {
+        BitBoard::from_square(Square::make_square(x, y))
+    }
+
+    #[inline]
+    pub fn test(self, x: X, y: Y) -> bool {
+        let pos = BitBoard::set(x, y);
+        self & pos == pos
+    }
+
+    #[inline]
+    pub fn test_square(self, square: Square) -> bool {
+        BitBoard::from_square(square).is_subset(self)
+    }
+
+    #[inline]
+    pub fn from_indices(x: usize, y: usize) -> BitBoard {
+        BitBoard::set(X::from_index(x), Y::from_index(y))
+    }
+
+    #[inline]
+    pub fn from_indices_vec(xs: Vec<(usize, usize)>) -> BitBoard {
+        let mut b = EMPTY;
+        for (rx, ry) in xs {
+            b |= BitBoard::from_indices(rx, ry);
+        }
+        b
+    }
+
+    /// Construct a new `BitBoard` with a particular `Square` set
+    #[inline]
+    pub fn from_square(sq: Square) -> BitBoard {
+        BitBoard(1u64 << sq.to_int())
+    }
+
+    /// Convert an `Option<Square>` to an `Option<BitBoard>`
+    #[inline]
+    pub fn from_maybe_square(sq: Option<Square>) -> Option<BitBoard> {
+        sq.map(BitBoard::from_square)
+    }
+
+    /// Convert a `BitBoard` to a `Square`.  This grabs the least-significant `Square`
+    #[inline]
+    pub fn to_square(self) -> Square {
+        Square::new(self.0.trailing_zeros() as u8)
+    }
+
+    /// Count the number of `Squares` set in this `BitBoard`
+    #[inline]
+    pub fn popcnt(self) -> u32 {
+        self.0.count_ones()
+    }
+
+    /// Reverse this `BitBoard`.  Look at it from the opponents perspective.
+    #[inline]
+    pub fn reverse_colors(self) -> BitBoard {
+        BitBoard(self.0.swap_bytes())
+    }
+
+    /// Convert this `BitBoard` to a `usize` (for table lookups)
+    #[inline]
+    pub fn to_size(self, rightshift: u8) -> usize {
+        (self.0 >> rightshift) as usize
+    }
+
+    #[inline]
+    pub fn occupied(&self, square: Square) -> bool {
+        let mask = BitBoard::from_square(square);
+        self & mask == mask
+    }
+
+    pub fn is_empty(self) -> bool {
+        self == EMPTY
     }
 
     #[inline]
@@ -54,11 +128,9 @@ impl BitBoard {
             return false;
         }
 
-        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
-        // path at every step. Stop when fill reaches any set bit in sq2, or
-        // fill cannot progress any further
-
-        // Drop bits not in path
+        // With bitboard sq1, do an 4-way flood fill, masking off bits not in
+        // path at every step. Stop when fill reaches an opposite connection condition,
+        // or fill cannot progress any further
         while sq1 != 0 {
             let temp: u64 = sq1;
             sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
@@ -76,8 +148,6 @@ impl BitBoard {
         true
     }
 
-    // Returns true if a path of set bits in 'path' exists that 8-way connect
-    // any set bit in sq1 to any set bit of sq2
     pub fn floodfill4(self, start: Square) -> BitBoard {
         let path = self.0;
         let mut sq1 = BitBoard::from_square(start).0 & path;
@@ -87,11 +157,8 @@ impl BitBoard {
             return EMPTY;
         }
 
-        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
-        // path at every step. Stop when fill reaches any set bit in sq2, or
-        // fill cannot progress any further
-
-        // Drop bits not in path
+        // With bitboard sq1, do an 4-way flood fill, masking off bits not in
+        // path at every step. Stop when fill cannot progress any further
         while sq1 != 0 {
             let temp: u64 = sq1;
             sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
@@ -103,11 +170,9 @@ impl BitBoard {
                 break;
             } // Fill has stopped
         }
-        BitBoard(sq1) // Found a good path
+        BitBoard(sq1)
     }
 
-    // Returns true if a path of set bits in 'path' exists that 8-way connect
-    // any set bit in sq1 to any set bit of sq2
     pub fn floodfill8(self, start: Square) -> BitBoard {
         let path = self.0;
         let mut sq1 = BitBoard::from_square(start).0 & path;
@@ -120,8 +185,6 @@ impl BitBoard {
         // With bitboard sq1, do an 8-way flood fill, masking off bits not in
         // path at every step. Stop when fill reaches any set bit in sq2, or
         // fill cannot progress any further
-
-        // Drop bits not in path
         while sq1 != 0 {
             let temp: u64 = sq1;
             sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
@@ -132,22 +195,7 @@ impl BitBoard {
                 break; // Fill has stopped
             }
         }
-        BitBoard(sq1) // Found a good path
-    }
-
-    #[inline]
-    pub fn touches_wall(self) -> bool {
-        let walls_mask: u64 = 0xff818181818181ff;
-        self.0 & walls_mask != 0
-    }
-
-    #[inline]
-    pub fn is_adjacent(self, other: BitBoard) -> bool {
-        let s = self.dshift();
-        let w = self.lshift();
-        let n = self.ushift();
-        let e = self.rshift();
-        (s | w | n | e) & other != EMPTY
+        BitBoard(sq1)
     }
 
     #[inline]
@@ -156,35 +204,7 @@ impl BitBoard {
     }
 
     pub fn from_squares(squares: Vec<Square>) -> Self {
-        let mut b = BitBoard(0);
-        for sq in squares {
-            b.0 |= 1 << sq.to_index();
-        }
-        b
-    }
-
-    #[inline]
-    pub fn to_squares(self) -> Vec<Square> {
-        let mut indices = Vec::with_capacity(4);
-        let mut num = self.0;
-        while num != 0 {
-            let tz = num.trailing_zeros();
-            indices.push(Square::new(tz as u8));
-            num &= !(1 << tz);
-        }
-        indices
-    }
-
-    #[inline]
-    pub fn to_squares_rev(self) -> Vec<Square> {
-        let mut indices = Vec::with_capacity(4);
-        let mut num = self.0;
-        while num != 0 {
-            let lz = num.leading_zeros();
-            indices.push(Square::new((63 - lz) as u8));
-            num &= !(1 << (63 - lz));
-        }
-        indices
+        BitBoard(squares.iter().fold(0, |b, sq| b | (1 << sq.to_index())))
     }
 
     #[inline]
@@ -220,22 +240,17 @@ impl BitBoard {
     // These _by_squares variants for rotating sparse bitboards may not be worth it.
     #[inline]
     pub fn rot90_by_squares(self) -> BitBoard {
-        BitBoard::from_squares(self.to_squares().iter().map(|x| x.rot90_fast32()).collect())
+        BitBoard::from_squares(self.map(|x| x.rot90_fast32()).collect())
     }
 
     #[inline]
     pub fn rot180_by_squares(self) -> BitBoard {
-        BitBoard::from_squares(self.to_squares().iter().map(|x| x.rot180()).collect())
+        BitBoard::from_squares(self.map(|x| x.rot180()).collect())
     }
 
     #[inline]
     pub fn rot270_by_squares(self) -> BitBoard {
-        BitBoard::from_squares(
-            self.to_squares()
-                .iter()
-                .map(|x| x.rot270_fast32())
-                .collect(),
-        )
+        BitBoard::from_squares(self.map(|x| x.rot270_fast32()).collect())
     }
 
     #[inline]
@@ -267,11 +282,14 @@ impl BitBoard {
 
     #[inline]
     pub fn rshift(self) -> BitBoard {
+        const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f); // Excludes the h-file (rightmost column)
+
         BitBoard((self & NOT_H_FILE).0 << 1)
     }
 
     #[inline]
     pub fn lshift(self) -> BitBoard {
+        const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe); // Excludes the a-file (leftmost column)
         BitBoard((self & NOT_A_FILE).0 >> 1)
     }
 
@@ -535,14 +553,6 @@ impl Not for &BitBoard {
     }
 }
 
-impl BitBoard {
-    #[inline]
-    pub fn test(self, x: X, y: Y) -> bool {
-        let pos = BitBoard::set(x, y);
-        self & pos == pos
-    }
-}
-
 impl fmt::Display for BitBoard {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -561,82 +571,6 @@ impl fmt::Display for BitBoard {
         }
         s.push_str("   A B C D E F G H\n");
         write!(f, "{}", s)
-    }
-}
-
-impl BitBoard {
-    /// Construct a new bitboard from a u64
-    #[inline]
-    pub fn new(b: u64) -> BitBoard {
-        BitBoard(b)
-    }
-
-    /// Construct a new `BitBoard` with a particular `Square` set
-    #[inline]
-    pub fn set(x: X, y: Y) -> BitBoard {
-        BitBoard::from_square(Square::make_square(x, y))
-    }
-
-    #[inline]
-    pub fn test_square(&self, square: Square) -> bool {
-        let mask = BitBoard::from_square(square);
-        self & mask == mask
-    }
-
-    #[inline]
-    pub fn from_indices(x: usize, y: usize) -> BitBoard {
-        BitBoard::set(X::from_index(x), Y::from_index(y))
-    }
-
-    #[inline]
-    pub fn from_indices_vec(xs: Vec<(usize, usize)>) -> BitBoard {
-        let mut b = BitBoard::empty();
-        for (rx, ry) in xs {
-            b |= BitBoard::from_indices(rx, ry);
-        }
-        b
-    }
-
-    /// Construct a new `BitBoard` with a particular `Square` set
-    #[inline]
-    pub fn from_square(sq: Square) -> BitBoard {
-        BitBoard(1u64 << sq.to_int())
-    }
-
-    /// Convert an `Option<Square>` to an `Option<BitBoard>`
-    #[inline]
-    pub fn from_maybe_square(sq: Option<Square>) -> Option<BitBoard> {
-        sq.map(BitBoard::from_square)
-    }
-
-    /// Convert a `BitBoard` to a `Square`.  This grabs the least-significant `Square`
-    #[inline]
-    pub fn to_square(self) -> Square {
-        Square::new(self.0.trailing_zeros() as u8)
-    }
-
-    /// Count the number of `Squares` set in this `BitBoard`
-    #[inline]
-    pub fn popcnt(self) -> u32 {
-        self.0.count_ones()
-    }
-
-    /// Reverse this `BitBoard`.  Look at it from the opponents perspective.
-    #[inline]
-    pub fn reverse_colors(self) -> BitBoard {
-        BitBoard(self.0.swap_bytes())
-    }
-
-    /// Convert this `BitBoard` to a `usize` (for table lookups)
-    #[inline]
-    pub fn to_size(self, rightshift: u8) -> usize {
-        (self.0 >> rightshift) as usize
-    }
-
-    #[inline]
-    pub fn occupied(&self, square: Square) -> bool {
-        let mask = BitBoard::from_square(square);
-        self & mask == mask
     }
 }
 
