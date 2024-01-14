@@ -16,7 +16,7 @@ Apparently territory and safety are not dictated by liberties as in go.
 ### Are connections between pieces orthogonally adjacencies?
 
 We surmise so based on limited examples of play. In the following position,
-the white koubaku piece at A7 would be alive.
+the white kunoji piece at A7 would be alive.
 
 
 ````
@@ -65,7 +65,8 @@ capture.
 
 ### Does a piece played adjacent to secure territory also inherit the safety of the original capturing group?
 
-We assume yes since it would be impractical to keep track of the extent of a captured territory.
+We assume yes since it would be impractical to keep track of the original
+extent of a captured territory.
 
 In the following position, the white player has formed a territory in the
 upper left with a kunoji. This piece is automatically secure from future
