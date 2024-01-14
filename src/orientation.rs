@@ -1,4 +1,7 @@
+use crate::error::Error;
 use crate::square::Square;
+
+use std::str::FromStr;
 
 #[derive(PartialEq, Clone, Copy, Debug, Eq)]
 pub enum Orientation {
@@ -79,6 +82,23 @@ impl Orientation {
             2 => Orientation::N,
             3 => Orientation::E,
             _ => unreachable!(),
+        }
+    }
+}
+
+impl FromStr for Orientation {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            return Err(Error::InvalidRank);
+        }
+        match s.chars().next().unwrap() {
+            'S' => Ok(Orientation::S),
+            'W' => Ok(Orientation::W),
+            'N' => Ok(Orientation::N),
+            'E' => Ok(Orientation::E),
+            _ => Err(Error::InvalidOrientation),
         }
     }
 }

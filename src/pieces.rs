@@ -193,8 +193,7 @@ impl PieceList {
             }
         }
         for piece_type in ALL_PIECE_TYPE_IDS {
-            let name = format!("{:?}", piece_type).to_lowercase();
-            print!("{}={} ", name, counts[piece_type as usize]);
+            print!("{}={} ", piece_type.notation(), counts[piece_type as usize]);
         }
         println!();
     }

@@ -19,6 +19,8 @@ use crate::square::Square;
 
 use minimax::Strategy;
 
+use rustyline::error::ReadlineError;
+
 use log::info;
 #[macro_use]
 extern crate log;
@@ -30,7 +32,6 @@ impl minimax::Game for Nego {
 
     #[inline]
     fn generate_moves(state: &State, moves: &mut Vec<Move>) {
-        trace!("XX1");
         let mut ma = MoveAccumulator::new();
         state.board.generate_moves(state.current, &mut ma);
         moves.append(&mut ma.0)
@@ -98,7 +99,6 @@ impl minimax::Game for Nego {
 
 impl State {
     pub fn random_move(&self) -> Option<Move> {
-        trace!("XX3");
         use rand::Rng;
         let mut ma = MoveAccumulator::new();
         self.board.generate_moves(self.current, &mut ma);
@@ -143,7 +143,6 @@ fn demo_rnd() {
     let mut rng = rand::thread_rng();
     loop {
         let mut ma = MoveAccumulator::new();
-        trace!("XX4");
         state.board.generate_moves(state.current, &mut ma);
         if ma.0.is_empty() {
             break;
@@ -161,21 +160,48 @@ fn demo_rnd() {
     }
 }
 
+fn cli() -> rustyline::Result<()> {
+    use rustyline::*;
+    let mut rl = DefaultEditor::new()?;
+    loop {
+        let readline = rl.readline("nego> ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_str())?;
+                println!("Line: {:?}", line.trim());
+                if line.trim() == "exit" {
+                    break;
+                }
+                if line.trim() == "demo" {
+                    demo_minimax();
+                }
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("^C");
+            }
+            Err(ReadlineError::Eof) => {
+                break;
+            }
+            Err(err) => {
+                println!("Error: {err:?}");
+                break;
+            }
+        }
+    }
+    Ok(())
+}
+
 fn demo_minimax() {
     use minimax::Game;
     use minimax::{IterativeOptions, IterativeSearch, ParallelOptions, ParallelSearch};
 
-    // let opts = IterativeOptions::new()
-    // .with_table_byte_size(64_000_000)
+    let opts = IterativeOptions::new().with_table_byte_size(64_000_000);
     // .with_double_step_increment();
 
     use std::time::Duration;
-    // let mut iterative =
-    // IterativeSearch::new(Eval::default(), opts.clone().with_aspiration_window(5));
-    // iterative.set_max_depth(4);
-    // let mut strategy = ParallelSearch::new(Eval::default(), opts.verbose(), ParallelOptions::new());
+    // let mut strategy = ParallelSearch::new(Eval, opts.verbose(), ParallelOptions::new());
     // strategy.set_max_depth(12);
-    // strategy.set_timeout(std::time::Duration::from_secs(20));
+    // strategy.set_timeout(std::time::Duration::from_secs(90));
 
     // Iterative
     let mut strategy =
@@ -183,7 +209,7 @@ fn demo_minimax() {
     strategy.set_timeout(std::time::Duration::from_secs(10));
 
     // Negamax
-    // let mut strategy = minimax::Negamax::new(Eval::default(), 4);
+    // let mut strategy = minimax::Negamax::new(Eval, 4);
 
     // MCTS
     // let opts = minimax::MCTSOptions::default().verbose();
@@ -201,10 +227,8 @@ fn demo_minimax() {
         }
         state.dump();
         match if s == 0 {
-            // trace!("MAIN: SELECT RANDOM BLACK");
             state.random_move()
         } else {
-            // trace!("MAIN: SELECT RANDOM WHITE");
             strategy.choose_move(&state)
             // state.random_move()
         } {
@@ -225,11 +249,14 @@ fn demo_minimax() {
     state.dump();
 }
 
-fn main() {
+fn main() -> rustyline::Result<()> {
     pretty_env_logger::init();
+
     info!("initializing ray LUT");
     Rays::build_lut();
 
+    cli()
+
     //dem();
-    demo_minimax();
+    //demo_minimax();
 }

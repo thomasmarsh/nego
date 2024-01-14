@@ -80,14 +80,14 @@ impl FromStr for X {
             return Err(Error::InvalidRank);
         }
         match s.chars().next().unwrap() {
-            '1' => Ok(X::X0),
-            '2' => Ok(X::X1),
-            '3' => Ok(X::X2),
-            '4' => Ok(X::X3),
-            '5' => Ok(X::X4),
-            '6' => Ok(X::X5),
-            '7' => Ok(X::X6),
-            '8' => Ok(X::X7),
+            'A' => Ok(X::X0),
+            'B' => Ok(X::X1),
+            'C' => Ok(X::X2),
+            'D' => Ok(X::X3),
+            'E' => Ok(X::X4),
+            'F' => Ok(X::X5),
+            'G' => Ok(X::X6),
+            'H' => Ok(X::X7),
             _ => Err(Error::InvalidRank),
         }
     }

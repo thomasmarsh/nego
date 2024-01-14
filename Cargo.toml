@@ -23,6 +23,8 @@ log = "0.4"
 minimax = "0.5.3"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
+rustyline = "13.0.0"
+serde = { version = "1.0.195", features = ["derive"] }
 
 ## Core library
 #relm4 = "0.6.2"

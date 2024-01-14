@@ -13,73 +13,6 @@ pub const EMPTY: BitBoard = BitBoard(0);
 const NOT_A_FILE: BitBoard = BitBoard(0xfefefefefefefefe); // Excludes the a-file (leftmost column)
 const NOT_H_FILE: BitBoard = BitBoard(0x7f7f7f7f7f7f7f7f); // Excludes the h-file (rightmost column)
 
-const NEIGHBOR_MASK: [u64; 64] = [
-    0x0000000000000102,
-    0x0000000000000205,
-    0x000000000000040a,
-    0x0000000000000814,
-    0x0000000000001028,
-    0x0000000000002050,
-    0x00000000000040a0,
-    0x0000000000008040,
-    0x0000000000010201,
-    0x0000000000020502,
-    0x0000000000040a04,
-    0x0000000000081408,
-    0x0000000000102810,
-    0x0000000000205020,
-    0x000000000040a040,
-    0x0000000000804080,
-    0x0000000001020100,
-    0x0000000002050200,
-    0x00000000040a0400,
-    0x0000000008140800,
-    0x0000000010281000,
-    0x0000000020502000,
-    0x0000000040a04000,
-    0x0000000080408000,
-    0x0000000102010000,
-    0x0000000205020000,
-    0x000000040a040000,
-    0x0000000814080000,
-    0x0000001028100000,
-    0x0000002050200000,
-    0x00000040a0400000,
-    0x0000008040800000,
-    0x0000010201000000,
-    0x0000020502000000,
-    0x0000040a04000000,
-    0x0000081408000000,
-    0x0000102810000000,
-    0x0000205020000000,
-    0x000040a040000000,
-    0x0000804080000000,
-    0x0001020100000000,
-    0x0002050200000000,
-    0x00040a0400000000,
-    0x0008140800000000,
-    0x0010281000000000,
-    0x0020502000000000,
-    0x0040a04000000000,
-    0x0080408000000000,
-    0x0102010000000000,
-    0x0205020000000000,
-    0x040a040000000000,
-    0x0814080000000000,
-    0x1028100000000000,
-    0x2050200000000000,
-    0x40a0400000000000,
-    0x8040800000000000,
-    0x0201000000000000,
-    0x0502000000000000,
-    0x0a04000000000000,
-    0x1408000000000000,
-    0x2810000000000000,
-    0x5020000000000000,
-    0xa040000000000000,
-    0x4080000000000000,
-];
-
 impl BitBoard {
     #[inline]
     pub fn empty() -> Self {
@@ -108,56 +41,98 @@ impl BitBoard {
 
     pub fn has_opposite_connection(self, start: Square) -> bool {
         // floods areas of 1s until it finds a cross-board connection
-        if !self.test_square(start) {
-            return false;
-        }
         let s = 0xff00000000000000;
         let w = 0x0101010101010101;
         let n = 0x00000000000000ff;
         let e = 0x8080808080808080;
 
-        let mut flood = 1u64 << start.to_index() as u64;
-        let mut queue = flood;
+        let path = self.0;
+        let mut sq1 = BitBoard::from_square(start).0 & path;
 
-        while queue != 0 {
-            let mut next_queue = 0;
-            for (i, mask) in NEIGHBOR_MASK.iter().enumerate() {
-                if (queue & (1u64 << i)) != 0 {
-                    let neighbors = mask & self.0 & !flood;
-                    flood |= neighbors;
-                    next_queue |= neighbors;
-                    if (flood & n != 0 && flood & s != 0) || (flood & w != 0 && flood & e != 0) {
-                        return true;
-                    }
-                }
-            }
-            queue = next_queue;
+        // Early exit if sq1 not on any path or if sq2 was provided but not on path
+        if sq1 == 0 {
+            return false;
         }
-        false
+
+        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
+        // path at every step. Stop when fill reaches any set bit in sq2, or
+        // fill cannot progress any further
+
+        // Drop bits not in path
+        while sq1 != 0 {
+            let temp: u64 = sq1;
+            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
+                | sq1.wrapping_shl(8)
+                | sq1.wrapping_shr(8);
+            sq1 &= path; // Drop bits not in path
+            if (sq1 & n != 0 && sq1 & s != 0) || (sq1 & w != 0 && sq1 & e != 0) {
+                break;
+            } else if sq1 == temp {
+                // Fill has stopped
+                return false;
+            }
+        }
+        return true;
     }
 
-    // This and the previous fn need testing
-    pub fn floodfill(self, start: Square) -> BitBoard {
-        // floods areas of 0s
-        if self.test_square(start) {
-            return BitBoard(0);
+    // Returns true if a path of set bits in 'path' exists that 8-way connect
+    // any set bit in sq1 to any set bit of sq2
+    pub fn floodfill4(self, start: Square) -> BitBoard {
+        let path = self.0;
+        let mut sq1 = BitBoard::from_square(start).0 & path;
+
+        // Early exit if sq1 not on any path or if sq2 was provided but not on path
+        if sq1 == 0 {
+            return EMPTY;
         }
 
-        let mut flood = 1u64 << start.to_index() as u64;
-        let mut queue = flood;
+        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
+        // path at every step. Stop when fill reaches any set bit in sq2, or
+        // fill cannot progress any further
 
-        while queue != 0 {
-            let mut next_queue = 0;
-            for (i, mask) in NEIGHBOR_MASK.iter().enumerate() {
-                if (queue & (1u64 << i)) != 0 {
-                    let neighbors = mask & !self.0 & !flood;
-                    flood |= neighbors;
-                    next_queue |= neighbors;
-                }
+        // Drop bits not in path
+        while sq1 != 0 {
+            let temp: u64 = sq1;
+            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
+                | sq1.wrapping_shl(8)
+                | sq1.wrapping_shr(8);
+            sq1 &= path; // Drop bits not in path
+            if sq1 == temp {
+                break;
+            } // Fill has stopped
+        }
+        return BitBoard(sq1); // Found a good path
+    }
+
+    // Returns true if a path of set bits in 'path' exists that 8-way connect
+    // any set bit in sq1 to any set bit of sq2
+    pub fn floodfill8(self, start: Square) -> BitBoard {
+        let path = self.0;
+        let mut sq1 = BitBoard::from_square(start).0 & path;
+
+        // Early exit if sq1 not on any path or if sq2 was provided but not on path
+        if sq1 == 0 {
+            return EMPTY;
+        }
+
+        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
+        // path at every step. Stop when fill reaches any set bit in sq2, or
+        // fill cannot progress any further
+
+        // Drop bits not in path
+        while sq1 != 0 {
+            let temp: u64 = sq1;
+            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f);
+            sq1 |= sq1.wrapping_shl(8) | sq1.wrapping_shr(8);
+            sq1 &= path; // Drop bits not in path
+            if sq1 == temp {
+                break; // Fill has stopped
             }
-            queue = next_queue;
         }
-        BitBoard(flood)
+        return BitBoard(sq1); // Found a good path
     }
 
     #[inline]
@@ -173,11 +148,6 @@ impl BitBoard {
         let n = self.ushift();
         let e = self.rshift();
         (s | w | n | e) & other != EMPTY
-    }
-
-    #[inline]
-    pub fn find_group(self, pos: Square) -> BitBoard {
-        (!self).floodfill(pos)
     }
 
     #[inline]

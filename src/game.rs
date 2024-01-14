@@ -53,9 +53,26 @@ fn find_opposite_corner(b: BitBoard, m: &Move) -> Option<BitBoard> {
     }
 }
 
-pub fn find_territory(b: BitBoard, group: BitBoard, opposite: BitBoard) -> BitBoard {
+fn is_captured(area: BitBoard, group: BitBoard) -> bool {
+    // let se = BitBoard(0xff80808080808080);
+    // let sw = BitBoard(0xff01010101010101);
+    // let ne = BitBoard(0x80808080808080ff);
+    // let nw = BitBoard(0x01010101010101ff);
+    let s = BitBoard(0xff00000000000000);
+    let w = BitBoard(0x0101010101010101);
+    let n = BitBoard(0x00000000000000ff);
+    let e = BitBoard(0x8080808080808080);
+
+    !(area.intersects(s) && area.intersects(n))
+        && !(area.intersects(e) && area.intersects(w))
+        && area.get_adjacent_mask().intersects(group)
+}
+
+// fn find_territory(b: BitBoard, group: BitBoard) -> (BitBoard, Vec<BitBoard>) {
+fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
     let mut seen = EMPTY;
     let mut territory = BitBoard(0);
+    // let mut each = Vec::new();
     while seen != !EMPTY {
         // Skip forward to the first unset bit
         let i = seen.0.trailing_ones() as u8;
@@ -68,16 +85,19 @@ pub fn find_territory(b: BitBoard, group: BitBoard, opposite: BitBoard) -> BitBo
         // If this board position is empty
         if !b.test_square(pos) {
             // Ge the connected group
-            let area = b.floodfill(pos);
+            let area = (!b).floodfill8(pos);
+            // each.push(area);
 
-            // Check that this is wall adjacent, group adjacent, and not an opposite wall
-            if area.touches_wall() && !area.intersects(opposite) && area.is_adjacent(group) {
+            if is_captured(area, group) {
                 territory |= area;
+                // break?
             }
+
             seen |= area;
         }
     }
     territory
+    // (territory, each)
 }
 
 impl PlayerState {
@@ -100,34 +120,48 @@ impl PlayerState {
 
         let mut capture_flag = false;
 
-        let group = self.occupied.find_group(m.mask().to_square());
-        // This is wrong. A territory can be captured by surround spaces along "up to 2" walls.
-        // (Keep in mind that no opposite-board connections are allowed.)
-        // So, maybe the correct rules are that the potential territory is:
-        // - surrounded by group (if zero wall loop captures allowed)
-        // - surrounded by 1 or 2 walls and the group
-        if let Some(opposite) = find_opposite_corner(group, m) {
-            let territory = find_territory(self.occupied, group, opposite);
-            if territory != EMPTY {
-                // The new territory is the potential territory minus any existing territory
-                let new = (group | territory) ^ (self.owned | other.owned);
-
-                // Look for pieces to remove
-                other.move_list.retain_mut(|x| {
-                    // If this isn't a boss and move was on the acquired territory
-                    if x.piece != PieceId::Boss && new.intersects(x.mask()) {
-                        // Remove from occupied map
-                        other.occupied &= !x.mask();
-                        // Add piece back to hand
-                        other.hand.add(x.piece);
-                        capture_flag = true;
-                        return false;
-                    }
-                    true
-                });
-                self.owned |= new;
-            }
+        let group = self.occupied.floodfill4(m.to_square());
+        let territory = find_territory(self.occupied, group);
+        // let (territory, each) = find_territory(self.occupied, group);
+        if territory.0 > 0 {
+            trace!(
+                // "--\noccupied:\n{}\ngroup:\n{}\nterritory:\n{}\n{}--\n--",
+                "--\noccupied:\n{}\ngroup:\n{}\nterritory:\n{}\n--",
+                self.occupied,
+                group,
+                territory,
+                //         each.iter()
+                //             .map(BitBoard::to_string)
+                //             .collect::<Vec<String>>()
+                //             .join("\n--\n")
+            );
         }
+        if territory != EMPTY {
+            // The new territory is the potential territory minus any existing territory
+            let new = (group | territory) ^ (self.owned | other.owned);
+
+            self.move_list.iter().for_each(|x| {
+                if x.mask().get_adjacent_mask().intersects(new) {
+                    self.owned |= x.mask();
+                }
+            });
+
+            // Look for pieces to remove
+            other.move_list.retain_mut(|x| {
+                // If this isn't a boss and move was on the acquired territory
+                if x.piece != PieceId::Boss && new.intersects(x.mask()) {
+                    // Remove from occupied map
+                    other.occupied &= !x.mask();
+                    // Add piece back to hand
+                    other.hand.add(x.piece);
+                    capture_flag = true;
+                    return false;
+                }
+                true
+            });
+            self.owned |= new;
+        }
+        // }
         capture_flag
     }
 
@@ -248,7 +282,7 @@ impl Board {
 
     #[inline]
     fn has_opposite_connection(&self, m: &Move, occupied: BitBoard) -> bool {
-        (occupied | m.mask()).has_opposite_connection(m.mask().to_square())
+        (occupied | m.mask()).has_opposite_connection(m.to_square())
     }
 
     pub fn generate_moves<V>(&self, color: Color, visitor: &mut V)
@@ -256,20 +290,20 @@ impl Board {
         V: MoveVisitor,
     {
         //println!("## generate_moves({:?})", color);
-        let (hand, occupied) = match color {
-            Color::Black => (&self.black.hand, self.black.occupied),
-            Color::White => (&self.white.hand, self.white.occupied),
+        let (hand, occupied, owned) = match color {
+            Color::Black => (&self.black.hand, self.black.occupied, self.white.owned),
+            Color::White => (&self.white.hand, self.white.occupied, self.black.owned),
         };
 
         if hand.holding(PieceId::Boss) {
-            self.piece_moves(PieceId::Boss, color, occupied, visitor);
+            self.piece_moves(PieceId::Boss, color, occupied, owned, visitor);
         } else {
             let mut hash = PieceList::piece_seen_hash();
             // trailingzeros here..
             for piece in ALL_PIECES_IDS {
                 if !hash.seen(piece) && hand.holding(piece) {
                     hash.add(piece);
-                    self.piece_moves(piece, color, occupied, visitor);
+                    self.piece_moves(piece, color, occupied, owned, visitor);
                     if visitor.bailout() {
                         return;
                     };
@@ -278,8 +312,14 @@ impl Board {
         }
     }
 
-    fn piece_moves<V>(&self, piece: PieceId, color: Color, occupied: BitBoard, visitor: &mut V)
-    where
+    fn piece_moves<V>(
+        &self,
+        piece: PieceId,
+        color: Color,
+        occupied: BitBoard,
+        owned: BitBoard,
+        visitor: &mut V,
+    ) where
         V: MoveVisitor,
     {
         let p = piece.piece_type_id().def();
@@ -299,6 +339,7 @@ impl Board {
             // x Not forming an opposite board connection
 
             if !m.mask().intersects(self.occupied())
+                && !m.mask().intersects(owned)
                 && (piece == PieceId::Boss
                     || (!m
                         .gaze()
@@ -390,10 +431,8 @@ impl State {
     pub fn dump(&self) {
         println!("Color map:");
         self.board.print_color_map();
-        println!("\nRays:");
-        println!("{}", self.board.rays);
-        println!("Boss:");
-        println!("{}", self.board.boss);
+        //println!("\nRays:");
+        //println!("{}", self.board.rays);
         println!("Occupied:");
         println!("{}", self.board.occupied());
         println!("Owned:");
