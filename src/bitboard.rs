@@ -73,7 +73,7 @@ impl BitBoard {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     // Returns true if a path of set bits in 'path' exists that 8-way connect
@@ -103,7 +103,7 @@ impl BitBoard {
                 break;
             } // Fill has stopped
         }
-        return BitBoard(sq1); // Found a good path
+        BitBoard(sq1) // Found a good path
     }
 
     // Returns true if a path of set bits in 'path' exists that 8-way connect
@@ -132,7 +132,7 @@ impl BitBoard {
                 break; // Fill has stopped
             }
         }
-        return BitBoard(sq1); // Found a good path
+        BitBoard(sq1) // Found a good path
     }
 
     #[inline]

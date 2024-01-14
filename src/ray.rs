@@ -1,5 +1,5 @@
 use crate::bitboard::{BitBoard, EMPTY};
-use crate::coord::{ALL_X, ALL_Y, X};
+use crate::coord::{ALL_X, ALL_Y};
 use crate::orientation::{Orientation, ALL_ORIENTATIONS};
 use crate::square::{Square, ALL_SQUARES};
 

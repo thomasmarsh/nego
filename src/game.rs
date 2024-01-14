@@ -8,7 +8,7 @@ use crate::ray::Rays;
 use crate::square::*;
 use crate::zobrist;
 
-use log::{error, trace};
+use log::trace;
 
 #[derive(Clone, Debug)]
 pub struct PlayerState {
@@ -18,54 +18,16 @@ pub struct PlayerState {
     pub owned: BitBoard,
 }
 
-fn find_opposite_corner(b: BitBoard, m: &Move) -> Option<BitBoard> {
-    let se = BitBoard(0xff80808080808080);
-    let sw = BitBoard(0xff01010101010101);
-    let ne = BitBoard(0x80808080808080ff);
-    let nw = BitBoard(0x01010101010101ff);
-    let s = BitBoard(0xff00000000000000);
-    let w = BitBoard(0x0101010101010101);
-    let n = BitBoard(0x00000000000000ff);
-    let e = BitBoard(0x8080808080808080);
-    let has_walls = |x: BitBoard, y: BitBoard| x.intersects(b) && y.intersects(b);
-
-    match (
-        b.connected(s, e) as u8,
-        b.connected(s, w) as u8,
-        b.connected(n, e) as u8,
-        b.connected(n, w) as u8,
-    ) {
-        (1, 0, 0, 0) => Some(nw),
-        (0, 1, 0, 0) => Some(ne),
-        (0, 0, 1, 0) => Some(sw),
-        (0, 0, 0, 1) => Some(se),
-        (0, 0, 0, 0) => None,
-        _ => {
-            error!("move: {:?}\n{}", m, m.mask());
-            error!("has se walls:{}\n{}", has_walls(s, e), b & se);
-            error!("b:\n{}", b);
-            error!("has sw walls:{}\n{}", has_walls(s, w), b & sw);
-            error!("has ne walls:{}\n{}", has_walls(n, e), b & ne);
-            error!("has nw walls:{}\n{}", has_walls(n, w), b & nw);
-            error!("multiple corners!");
-            panic!();
-        }
-    }
-}
-
 fn is_captured(area: BitBoard, group: BitBoard) -> bool {
-    // let se = BitBoard(0xff80808080808080);
-    // let sw = BitBoard(0xff01010101010101);
-    // let ne = BitBoard(0x80808080808080ff);
-    // let nw = BitBoard(0x01010101010101ff);
     let s = BitBoard(0xff00000000000000);
     let w = BitBoard(0x0101010101010101);
     let n = BitBoard(0x00000000000000ff);
     let e = BitBoard(0x8080808080808080);
 
-    !(area.intersects(s) && area.intersects(n))
-        && !(area.intersects(e) && area.intersects(w))
-        && area.get_adjacent_mask().intersects(group)
+    !(area.intersects(s) && area.intersects(n) || area.intersects(e) && area.intersects(w))
+    // !(area.intersects(s) && area.intersects(n))
+    //     && !(area.intersects(e) && area.intersects(w))
+    //     && area.get_adjacent_mask().intersects(group)
 }
 
 // fn find_territory(b: BitBoard, group: BitBoard) -> (BitBoard, Vec<BitBoard>) {
@@ -122,26 +84,21 @@ impl PlayerState {
 
         let group = self.occupied.floodfill4(m.to_square());
         let territory = find_territory(self.occupied, group);
-        // let (territory, each) = find_territory(self.occupied, group);
         if territory.0 > 0 {
             trace!(
-                // "--\noccupied:\n{}\ngroup:\n{}\nterritory:\n{}\n{}--\n--",
                 "--\noccupied:\n{}\ngroup:\n{}\nterritory:\n{}\n--",
                 self.occupied,
                 group,
                 territory,
-                //         each.iter()
-                //             .map(BitBoard::to_string)
-                //             .collect::<Vec<String>>()
-                //             .join("\n--\n")
             );
         }
         if territory != EMPTY {
             // The new territory is the potential territory minus any existing territory
             let new = (group | territory) ^ (self.owned | other.owned);
 
+            // Mark as owned all this color's pieces which are within the captured territory.
             self.move_list.iter().for_each(|x| {
-                if x.mask().get_adjacent_mask().intersects(new) {
+                if x.mask().intersects(new) {
                     self.owned |= x.mask();
                 }
             });

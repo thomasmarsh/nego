@@ -11,13 +11,6 @@ pub enum Orientation {
     E, // W, 270
 }
 
-pub enum Corner {
-    NW,
-    NE,
-    SW,
-    SE,
-}
-
 pub const NUM_ORIENTATIONS: usize = 4;
 
 pub const ALL_ORIENTATIONS: [Orientation; 4] = [

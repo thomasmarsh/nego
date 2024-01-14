@@ -1,7 +1,6 @@
 use crate::bitboard::BitBoard;
 use crate::orientation::Orientation;
 use crate::pieces::PieceTypeId;
-use crate::r#move::Move;
 use crate::square::Square;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -34,10 +33,13 @@ impl LUTEntry {
         position: Square,
         orientation: Orientation,
     ) -> Option<LUTEntry> {
-        for i in piece.def().lut_offset..piece.def().moves {
-            if Orientation::from_index(MOVE_TAB[i].0) == orientation
-                && Square::new(MOVE_TAB[i].1) == position
-            {
+        for (i, m) in MOVE_TAB
+            .iter()
+            .enumerate()
+            .skip(piece.def().lut_offset)
+            .take(piece.def().moves)
+        {
+            if Orientation::from_index(m.0) == orientation && Square::new(m.1) == position {
                 return Some(LUTEntry(i));
             }
         }

@@ -10,12 +10,10 @@ mod ray;
 mod square;
 mod zobrist;
 
-use crate::bitboard::BitBoard;
 use crate::game::State;
 use crate::pieces::PieceId;
 use crate::r#move::{Color, HasMoves, Move, MoveAccumulator};
 use crate::ray::Rays;
-use crate::square::Square;
 
 use minimax::Strategy;
 

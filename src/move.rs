@@ -46,7 +46,7 @@ impl Move {
     }
 
     // First set bit (self.position may be empty on kunoji types)
-    pub fn to_square(&self) -> Square {
+    pub fn to_square(self) -> Square {
         self.mask().to_square()
     }
 
