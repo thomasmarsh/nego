@@ -30,7 +30,6 @@ impl Color {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Move {
-    pub color: Color,    // 1 bit
     pub piece: PieceId,  // 4 bit
     pub entry: LUTEntry, // 11 bit
 }
@@ -117,11 +116,7 @@ impl Move {
 
         let entry =
             LUTEntry::lookup(piece_type, position, orientation).ok_or(Error::LUTEntryNotFound)?;
-        Ok(Move {
-            color: Color::Black,
-            piece,
-            entry,
-        })
+        Ok(Move { piece, entry })
     }
 }
 

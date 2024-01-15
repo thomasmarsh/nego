@@ -46,7 +46,6 @@ fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
 
             if is_captured(area, group) {
                 territory |= area;
-                // break?
             }
 
             seen |= area;
@@ -117,7 +116,7 @@ impl PlayerState {
 
     #[inline]
     pub fn points(&self) -> u32 {
-        self.occupied.popcnt()
+        (self.owned | self.occupied).popcnt()
     }
 
     pub fn moves_str(&self) -> String {
@@ -232,14 +231,14 @@ impl Board {
     }
 
     #[inline]
-    pub fn place(&mut self, m: &Move) -> bool {
+    pub fn place(&mut self, color: Color, m: &Move) -> bool {
         // x decrement hand
         // x add to move_list
         // x draw rays (extra for boss)
         // x add to color_list
         // x if boss, add to boss
         // x if connection: capture and mark territory
-        let capture_flag = match m.color {
+        let capture_flag = match color {
             Color::Black => self.black.place(m, &mut self.white),
             Color::White => self.white.place(m, &mut self.black),
         };
@@ -275,7 +274,6 @@ impl Board {
 
                 for i in p.lut_offset..p.lut_offset + p.moves {
                     let m = Move {
-                        color,
                         piece,
                         entry: LUTEntry(i),
                     };
@@ -351,7 +349,7 @@ impl State {
 
     #[inline]
     pub fn place(&mut self, m: &Move) {
-        self.capture_flag = self.board.place(m);
+        self.capture_flag = self.board.place(self.current, m);
     }
 
     #[inline]
