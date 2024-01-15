@@ -23,10 +23,12 @@ territory they've already captured.
 This leaves open some questions and we address how those are handled here.
 Apparently territory and safety are not dictated by liberties as in go.
 
-### Are connections between pieces orthogonally adjacencies?
+### Adjacent Connections
+
+*Are connections between pieces orthogonally adjacencies?*
 
 We surmise so based on limited examples of play. In the following position,
-the white kunoji piece at A7 would be alive.
+the white kunoji piece at **A7** would be alive.
 
 
 ````
@@ -50,13 +52,15 @@ based approach to capture would be preferable. When defending, it is the
 difference between paying attention to piece chains of the opponent vs.
 liberties of your pieces.
 
-### Can spaces be surrounded in the middle of the board?
+### Middle Board Territory
 
-We assume yes since it is not specified whether an edge is necessary to
-capture territory. Capturing in the center requires more spaces and is
-less likely, but could be strategically interesting as the board fills up.
+*Can spaces be surrounded in the middle of the board?*
 
-According to our rules, the white mame piece at E4 is alive, but at risk of
+We assume yes since it is not specified whether an edge is necessary to capture
+territory. Capturing in the center requires more spaces and is less likely, but
+could be strategically interesting as the board fills up.
+
+According to our rules, the white mame piece at **E4** is alive, but at risk of
 capture.
 
 ````
@@ -73,7 +77,10 @@ capture.
 ````
 
 
-### Does a piece played adjacent to secure territory also inherit the safety of the original capturing group?
+### Territory Extension
+
+*Does a piece played adjacent to secure territory also inherit the safety
+of the original capturing group?*
 
 We assume yes since it would be impractical to keep track of the original
 extent of a captured territory.
@@ -95,7 +102,7 @@ capture since it formed a territory.
    A B C D E F G H
 ````
 
-The following nobi move at C2 would extend its power. Any pieces in the future
+The following nobi move at **C2** would extend its power. Any pieces in the future
 could connect to the row of whites on row 2 to guarantee life.
 
 ````
@@ -115,11 +122,18 @@ This seems a reasonable approach and is similar to how go rules work in the
 presence of secure territories. It is notable that the boss should *not* extend
 its safety to adjacent like colored pieces.
 
-### Can a territory be captured if it contains only opponent pieces but no empty spaces?
+### No Empty Space Capture
 
-We assume yes. However, there is a video which shows a position that
+*Can a territory be captured if it contains only opponent pieces but no empty spaces?*
+
+It is clear that you can't capture territory just by playing against a wall. (I.e.,
+touching a wall does not mark your stone as safe.) We assume, however, that surrounding
+a piece is sufficient to capture it without requiring additional empty spaces in the
+new territory.
+
+It's important to not that there is a video which shows a position that
 violates this assumption. The
-[tutorial video](https://www.youtube.com/watch? v=I8lCrK9Mjtk&t=43s) shows
+[tutorial video](https://www.youtube.com/watch?v=I8lCrK9Mjtk&t=43s) shows
 this end came position.
 
 ````
@@ -135,10 +149,10 @@ this end came position.
    A B C D E F G H
 ````
 
-The black kunoji group at G5 would not be permitted under our rules since it is
+The black kunoji group at **G5** would not be permitted under our rules since it is
 surrounded. It is notable that the video presents this as an end game position,
 yet there are still moves available. It may be that this was simply a less
-rigorous example.
+rigorous example for the purposes of making the video.
 
 ## Other Questions
 
