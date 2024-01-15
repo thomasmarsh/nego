@@ -1,6 +1,8 @@
 Nego
 ==
 
+[![Rust](https://github.com/thomasmarsh/nego/actions/workflows/rust.yml/badge.svg)](https://github.com/thomasmarsh/nego/actions/workflows/rust.yml)
+
 This is an implementation of the Nego board game designed by
 [Yuka Morii](http://www.yuka-design.com). The [rules](doc/nego-rule.pdf)
 are included in the product description on [Koncent](https://koncent.jp/view/item/000000001904).
