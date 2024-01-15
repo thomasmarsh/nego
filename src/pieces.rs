@@ -1,6 +1,5 @@
 use crate::orientation::Orientation;
 
-#[allow(dead_code)]
 pub struct PieceType {
     pub name_en: &'static str,
     pub name_jp: &'static str,
@@ -13,6 +12,7 @@ pub struct PieceType {
 }
 
 impl PieceType {
+    #[inline]
     pub fn size_for(&self, orientation: Orientation) -> (u8, u8) {
         use Orientation::*;
         match orientation {
@@ -83,6 +83,7 @@ pub const ALL_PIECE_TYPE_IDS: [PieceTypeId; 10] = [
 ];
 
 impl PieceTypeId {
+    #[inline]
     pub fn def(self) -> &'static PieceType {
         match self {
             PieceTypeId::Boss => &BOSS_T,
@@ -116,6 +117,26 @@ impl PieceTypeId {
 }
 
 impl PieceId {
+    #[inline]
+    pub fn from_index(i: u16) -> Option<PieceId> {
+        match i {
+            0 => Some(PieceId::Boss),
+            1 => Some(PieceId::Mame),
+            2 => Some(PieceId::Nobi),
+            3 => Some(PieceId::Koubaku1),
+            4 => Some(PieceId::Koubaku2),
+            5 => Some(PieceId::Koubaku3a),
+            6 => Some(PieceId::Koubaku3b),
+            7 => Some(PieceId::Kunoji1a),
+            8 => Some(PieceId::Kunoji1b),
+            9 => Some(PieceId::Kunoji2),
+            10 => Some(PieceId::Kunoji3),
+            11 => Some(PieceId::Kunoji4),
+            _ => None,
+        }
+    }
+
+    #[inline]
     pub fn piece_type_id(self) -> PieceTypeId {
         match self {
             PieceId::Boss => PieceTypeId::Boss,
@@ -137,36 +158,52 @@ impl PieceId {
 pub struct PieceSeenHash(u16);
 
 impl PieceSeenHash {
+    #[inline]
     pub fn mask(piece: PieceId) -> u16 {
         1 << piece.piece_type_id() as u16
     }
 
+    #[inline]
     pub fn seen(&self, piece: PieceId) -> bool {
         let mask = Self::mask(piece);
         mask & self.0 == mask
     }
 
+    #[inline]
     pub fn add(&mut self, piece: PieceId) {
         self.0 |= Self::mask(piece);
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Eq)]
 pub struct PieceList(u16);
 
 impl PieceList {
+    #[inline]
     pub fn full() -> PieceList {
         PieceList(0xfff)
     }
 
+    #[inline]
+    pub fn available(self) -> PieceList {
+        if self.holding(PieceId::Boss) {
+            PieceList(1)
+        } else {
+            self
+        }
+    }
+
+    #[inline]
     pub fn empty() -> PieceList {
         PieceList(0)
     }
 
+    #[inline]
     pub fn piece_seen_hash() -> PieceSeenHash {
-        PieceSeenHash(1)
+        PieceSeenHash(0)
     }
 
+    #[inline]
     pub fn holding(&self, piece: PieceId) -> bool {
         let mask = 1 << (piece as usize);
         self.0 & mask == mask
@@ -196,6 +233,21 @@ impl PieceList {
             print!("{}={} ", piece_type.notation(), counts[piece_type as usize]);
         }
         println!();
+    }
+}
+
+impl Iterator for PieceList {
+    type Item = PieceId;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 == 0 {
+            None
+        } else {
+            let result = self.0.trailing_zeros() as u16;
+            self.0 ^= 1 << result;
+            PieceId::from_index(result)
+        }
     }
 }
 

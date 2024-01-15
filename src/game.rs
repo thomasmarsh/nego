@@ -2,7 +2,7 @@ use crate::bitboard::{BitBoard, EMPTY};
 use crate::coord::{ALL_X, ALL_Y};
 use crate::move_tab::LUTEntry;
 use crate::orientation::Orientation;
-use crate::pieces::{PieceId, PieceList, ALL_PIECES_IDS};
+use crate::pieces::{PieceId, PieceList};
 use crate::r#move::{Color, Move, MoveVisitor};
 use crate::ray::Rays;
 use crate::square::*;
@@ -263,65 +263,47 @@ impl Board {
             Color::White => (&self.white.hand, self.white.occupied, self.black.owned),
         };
 
-        if hand.holding(PieceId::Boss) {
-            self.piece_moves(PieceId::Boss, color, occupied, owned, visitor);
-        } else {
-            let mut hash = PieceList::piece_seen_hash();
+        let mut hash = PieceList::piece_seen_hash();
+        for piece in hand.available() {
+            if !hash.seen(piece) {
+                hash.add(piece);
+                let p = piece.piece_type_id().def();
 
-            // TODO: use trailingzeros here
-            for piece in ALL_PIECES_IDS {
-                if !hash.seen(piece) && hand.holding(piece) {
-                    hash.add(piece);
-                    self.piece_moves(piece, color, occupied, owned, visitor);
-                    if visitor.bailout() {
-                        return;
+                for i in p.lut_offset..p.lut_offset + p.moves {
+                    let m = Move {
+                        color,
+                        piece,
+                        entry: LUTEntry(i),
                     };
+
+                    if self.valid(&m, occupied, owned) {
+                        visitor.visit(m);
+                        if visitor.bailout() {
+                            return;
+                        };
+                    }
                 }
             }
         }
     }
 
-    fn piece_moves<V>(
-        &self,
-        piece: PieceId,
-        color: Color,
-        occupied: BitBoard,
-        owned: BitBoard,
-        visitor: &mut V,
-    ) where
-        V: MoveVisitor,
-    {
-        let p = piece.piece_type_id().def();
+    #[inline]
+    fn valid(&self, m: &Move, occupied: BitBoard, owned: BitBoard) -> bool {
+        // x No overlap with other piece
+        // x Not face against edge of board
+        // x No eye contact with any other neko
+        // x Not looking at Boss
+        // x Nobi neko cannot touch their own boss with paw
+        // x Not forming an opposite board connection
 
-        for i in p.lut_offset..p.lut_offset + p.moves {
-            let m = Move {
-                color,
-                piece,
-                entry: LUTEntry(i),
-            };
-
-            // x No overlap with other piece
-            // x Not face against edge of board
-            // x No eye contact with any other neko
-            // x Not looking at Boss
-            // x Nobi neko cannot touch their own boss with paw
-            // x Not forming an opposite board connection
-
-            if !m.mask().intersects(self.occupied())
-                && !m.mask().intersects(owned)
-                && (piece == PieceId::Boss
-                    || (!m
-                        .gaze()
-                        .intersects(self.rays.get(m.orientation().opposite()))
-                        && !self.nobi_paw_overlaps(piece, occupied, &m)
-                        && !self.has_opposite_connection(&m, occupied)))
-            {
-                visitor.visit(m);
-                if visitor.bailout() {
-                    return;
-                };
-            }
-        }
+        !m.mask().intersects(self.occupied())
+            && !m.mask().intersects(owned)
+            && (m.piece == PieceId::Boss
+                || (!m
+                    .gaze()
+                    .intersects(self.rays.get(m.orientation().opposite()))
+                    && !self.nobi_paw_overlaps(m.piece, occupied, m)
+                    && !self.has_opposite_connection(m, occupied)))
     }
 
     #[inline]
