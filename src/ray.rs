@@ -25,6 +25,7 @@ impl Rays {
         }
     }
 
+    #[inline]
     pub fn get(&self, orientation: Orientation) -> BitBoard {
         use Orientation::*;
         match orientation {
@@ -35,6 +36,7 @@ impl Rays {
         }
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.s = EMPTY;
         self.w = EMPTY;
