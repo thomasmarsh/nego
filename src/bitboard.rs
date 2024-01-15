@@ -40,11 +40,8 @@ impl BitBoard {
 
     #[inline]
     pub fn from_indices_vec(xs: Vec<(usize, usize)>) -> BitBoard {
-        let mut b = EMPTY;
-        for (rx, ry) in xs {
-            b |= BitBoard::from_indices(rx, ry);
-        }
-        b
+        xs.iter()
+            .fold(EMPTY, |b, (x, y)| b | BitBoard::from_indices(*x, *y))
     }
 
     /// Construct a new `BitBoard` with a particular `Square` set
@@ -121,26 +118,26 @@ impl BitBoard {
         let e = 0x8080808080808080;
 
         let path = self.0;
-        let mut sq1 = BitBoard::from_square(start).0 & path;
+        let mut flood = BitBoard::from_square(start).0 & path;
 
-        // Early exit if sq1 not on any path or if sq2 was provided but not on path
-        if sq1 == 0 {
+        // Early exit if sq1 not on fill area
+        if flood == 0 {
             return false;
         }
 
         // With bitboard sq1, do an 4-way flood fill, masking off bits not in
         // path at every step. Stop when fill reaches an opposite connection condition,
         // or fill cannot progress any further
-        while sq1 != 0 {
-            let temp: u64 = sq1;
-            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
-                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
-                | sq1.wrapping_shl(8)
-                | sq1.wrapping_shr(8);
-            sq1 &= path; // Drop bits not in path
-            if (sq1 & n != 0 && sq1 & s != 0) || (sq1 & w != 0 && sq1 & e != 0) {
+        while flood != 0 {
+            let temp: u64 = flood;
+            flood |= (flood.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (flood.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
+                | flood.wrapping_shl(8)
+                | flood.wrapping_shr(8);
+            flood &= path; // Drop bits not in path
+            if (flood & n != 0 && flood & s != 0) || (flood & w != 0 && flood & e != 0) {
                 break;
-            } else if sq1 == temp {
+            } else if flood == temp {
                 // Fill has stopped
                 return false;
             }
@@ -150,52 +147,52 @@ impl BitBoard {
 
     pub fn floodfill4(self, start: Square) -> BitBoard {
         let path = self.0;
-        let mut sq1 = BitBoard::from_square(start).0 & path;
+        let mut flood = BitBoard::from_square(start).0 & path;
 
-        // Early exit if sq1 not on any path or if sq2 was provided but not on path
-        if sq1 == 0 {
+        // Early exit if flood not on fill area
+        if flood == 0 {
             return EMPTY;
         }
 
-        // With bitboard sq1, do an 4-way flood fill, masking off bits not in
+        // With bitboard flood, do an 4-way flood fill, masking off bits not in
         // path at every step. Stop when fill cannot progress any further
-        while sq1 != 0 {
-            let temp: u64 = sq1;
-            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
-                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
-                | sq1.wrapping_shl(8)
-                | sq1.wrapping_shr(8);
-            sq1 &= path; // Drop bits not in path
-            if sq1 == temp {
+        while flood != 0 {
+            let temp: u64 = flood;
+            flood |= (flood.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (flood.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f)
+                | flood.wrapping_shl(8)
+                | flood.wrapping_shr(8);
+            flood &= path; // Drop bits not in path
+            if flood == temp {
                 break;
             } // Fill has stopped
         }
-        BitBoard(sq1)
+        BitBoard(flood)
     }
 
     pub fn floodfill8(self, start: Square) -> BitBoard {
         let path = self.0;
-        let mut sq1 = BitBoard::from_square(start).0 & path;
+        let mut flood = BitBoard::from_square(start).0 & path;
 
-        // Early exit if sq1 not on any path or if sq2 was provided but not on path
-        if sq1 == 0 {
+        // Early exit if flood not on fill area
+        if flood == 0 {
             return EMPTY;
         }
 
-        // With bitboard sq1, do an 8-way flood fill, masking off bits not in
+        // With bitboard flood, do an 8-way flood fill, masking off bits not in
         // path at every step. Stop when fill reaches any set bit in sq2, or
         // fill cannot progress any further
-        while sq1 != 0 {
-            let temp: u64 = sq1;
-            sq1 |= (sq1.wrapping_shl(1) & 0xfefefefefefefefe)
-                | (sq1.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f);
-            sq1 |= sq1.wrapping_shl(8) | sq1.wrapping_shr(8);
-            sq1 &= path; // Drop bits not in path
-            if sq1 == temp {
+        while flood != 0 {
+            let temp: u64 = flood;
+            flood |= (flood.wrapping_shl(1) & 0xfefefefefefefefe)
+                | (flood.wrapping_shr(1) & 0x7f7f7f7f7f7f7f7f);
+            flood |= flood.wrapping_shl(8) | flood.wrapping_shr(8);
+            flood &= path; // Drop bits not in path
+            if flood == temp {
                 break; // Fill has stopped
             }
         }
-        BitBoard(sq1)
+        BitBoard(flood)
     }
 
     #[inline]
@@ -337,6 +334,43 @@ impl BitBoard {
             b = b.dshift();
         }
         b
+    }
+}
+
+impl fmt::Display for BitBoard {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s: String = "".to_owned();
+        s.push_str("   A B C D E F G H\n");
+        for y in ALL_Y {
+            s.push_str(format!(" {} ", y.to_index() + 1).as_str());
+            for x in ALL_X {
+                if self.test(x, y) {
+                    s.push_str("X ");
+                } else {
+                    s.push_str(". ");
+                }
+            }
+            s.push_str(format!("{}\n", y.to_index() + 1).as_str());
+        }
+        s.push_str("   A B C D E F G H\n");
+        write!(f, "{}", s)
+    }
+}
+
+/// For the `BitBoard`, iterate over every `Square` set.
+impl Iterator for BitBoard {
+    type Item = Square;
+
+    #[inline]
+    fn next(&mut self) -> Option<Square> {
+        if self.0 == 0 {
+            None
+        } else {
+            let result = self.to_square();
+            *self ^= BitBoard::from_square(result);
+            Some(result)
+        }
     }
 }
 
@@ -550,42 +584,5 @@ impl Not for &BitBoard {
     #[inline]
     fn not(self) -> BitBoard {
         BitBoard(!self.0)
-    }
-}
-
-impl fmt::Display for BitBoard {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s: String = "".to_owned();
-        s.push_str("   A B C D E F G H\n");
-        for y in ALL_Y {
-            s.push_str(format!(" {} ", y.to_index() + 1).as_str());
-            for x in ALL_X {
-                if self.test(x, y) {
-                    s.push_str("X ");
-                } else {
-                    s.push_str(". ");
-                }
-            }
-            s.push_str(format!("{}\n", y.to_index() + 1).as_str());
-        }
-        s.push_str("   A B C D E F G H\n");
-        write!(f, "{}", s)
-    }
-}
-
-/// For the `BitBoard`, iterate over every `Square` set.
-impl Iterator for BitBoard {
-    type Item = Square;
-
-    #[inline]
-    fn next(&mut self) -> Option<Square> {
-        if self.0 == 0 {
-            None
-        } else {
-            let result = self.to_square();
-            *self ^= BitBoard::from_square(result);
-            Some(result)
-        }
     }
 }

@@ -25,6 +25,8 @@ impl Color {
     }
 }
 
+// TODO: struct PackedMove(u16)
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Move {
     pub color: Color,    // 1 bit

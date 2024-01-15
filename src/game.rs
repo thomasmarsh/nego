@@ -8,8 +8,6 @@ use crate::ray::Rays;
 use crate::square::*;
 use crate::zobrist;
 
-use log::trace;
-
 #[derive(Clone, Debug)]
 pub struct PlayerState {
     pub hand: PieceList,
@@ -28,11 +26,9 @@ fn is_captured(area: BitBoard, group: BitBoard) -> bool {
         && area.get_adjacent_mask().intersects(group)
 }
 
-// fn find_territory(b: BitBoard, group: BitBoard) -> (BitBoard, Vec<BitBoard>) {
 fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
     let mut seen = EMPTY;
     let mut territory = BitBoard(0);
-    // let mut each = Vec::new();
     while seen != !EMPTY {
         // Skip forward to the first unset bit
         let i = seen.0.trailing_ones() as u8;
@@ -46,7 +42,6 @@ fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
         if !b.test_square(pos) {
             // Ge the connected group
             let area = (!b).floodfill8(pos);
-            // each.push(area);
 
             if is_captured(area, group) {
                 territory |= area;
@@ -57,7 +52,6 @@ fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
         }
     }
     territory
-    // (territory, each)
 }
 
 impl PlayerState {
@@ -79,14 +73,6 @@ impl PlayerState {
 
         let group = self.occupied.floodfill4(m.to_square());
         let territory = find_territory(self.occupied, group);
-        if territory.0 > 0 {
-            trace!(
-                "--\noccupied:\n{}\ngroup:\n{}\nterritory:\n{}\n--",
-                self.occupied,
-                group,
-                territory,
-            );
-        }
         if territory != EMPTY {
             // The new territory is the potential territory minus any existing territory
             let new = (group | territory) & !(self.owned | other.owned);
@@ -124,7 +110,6 @@ impl PlayerState {
             self.owned |= m.mask();
         }
 
-        // }
         capture_flag
     }
 
@@ -273,7 +258,6 @@ impl Board {
     where
         V: MoveVisitor,
     {
-        //println!("## generate_moves({:?})", color);
         let (hand, occupied, owned) = match color {
             Color::Black => (&self.black.hand, self.black.occupied, self.white.owned),
             Color::White => (&self.white.hand, self.white.occupied, self.black.owned),
@@ -283,7 +267,8 @@ impl Board {
             self.piece_moves(PieceId::Boss, color, occupied, owned, visitor);
         } else {
             let mut hash = PieceList::piece_seen_hash();
-            // trailingzeros here..
+
+            // TODO: use trailingzeros here
             for piece in ALL_PIECES_IDS {
                 if !hash.seen(piece) && hand.holding(piece) {
                     hash.add(piece);
