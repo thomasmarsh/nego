@@ -16,6 +16,7 @@ pub struct PlayerState {
     pub owned: BitBoard,
 }
 
+#[inline]
 fn is_captured(area: BitBoard, group: BitBoard) -> bool {
     let s = BitBoard(0xff00000000000000);
     let w = BitBoard(0x0101010101010101);
@@ -55,6 +56,7 @@ fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
 }
 
 impl PlayerState {
+    #[inline]
     pub fn new() -> PlayerState {
         PlayerState {
             hand: PieceList::full(),
@@ -113,6 +115,7 @@ impl PlayerState {
         capture_flag
     }
 
+    #[inline]
     pub fn points(&self) -> u32 {
         self.occupied.popcnt()
     }
@@ -135,6 +138,7 @@ pub struct Board {
 }
 
 impl Board {
+    #[inline]
     fn new() -> Board {
         Board {
             black: PlayerState::new(),
@@ -335,6 +339,7 @@ pub struct State {
 }
 
 impl State {
+    #[inline]
     pub fn new() -> State {
         State {
             current: Color::Black,
@@ -344,6 +349,7 @@ impl State {
         }
     }
 
+    #[inline]
     pub fn place(&mut self, m: &Move) {
         self.capture_flag = self.board.place(m);
     }

@@ -16,6 +16,7 @@ pub enum Color {
 }
 
 impl Color {
+    #[inline]
     pub fn next(&self) -> Color {
         use Color::*;
         match self {
@@ -35,23 +36,28 @@ pub struct Move {
 }
 
 impl Move {
+    #[inline]
     pub fn position(&self) -> Square {
         self.entry.position()
     }
 
+    #[inline]
     pub fn orientation(&self) -> Orientation {
         self.entry.orientation()
     }
 
+    #[inline]
     pub fn mask(&self) -> BitBoard {
         self.entry.mask()
     }
 
     // First set bit (self.position may be empty on kunoji types)
+    #[inline]
     pub fn to_square(self) -> Square {
         self.mask().to_square()
     }
 
+    #[inline]
     pub fn gaze(&self) -> BitBoard {
         self.entry.gaze()
     }
@@ -135,6 +141,8 @@ impl FromStr for Move {
 
 pub trait MoveVisitor {
     fn visit(&mut self, m: Move);
+
+    #[inline]
     fn bailout(&self) -> bool {
         false
     }
@@ -143,10 +151,12 @@ pub trait MoveVisitor {
 pub struct HasMoves(pub bool);
 
 impl MoveVisitor for HasMoves {
+    #[inline]
     fn visit(&mut self, _: Move) {
         self.0 = true;
     }
 
+    #[inline]
     fn bailout(&self) -> bool {
         self.0
     }
@@ -155,6 +165,7 @@ impl MoveVisitor for HasMoves {
 pub struct MoveCounter(pub usize);
 
 impl MoveVisitor for MoveCounter {
+    #[inline]
     fn visit(&mut self, _: Move) {
         self.0 += 1;
     }
@@ -163,12 +174,14 @@ impl MoveVisitor for MoveCounter {
 pub struct MoveAccumulator(pub Vec<Move>);
 
 impl MoveAccumulator {
+    #[inline]
     pub fn new() -> Self {
         Self(Vec::with_capacity(1720 >> 1))
     }
 }
 
 impl MoveVisitor for MoveAccumulator {
+    #[inline]
     fn visit(&mut self, m: Move) {
         self.0.push(m);
     }

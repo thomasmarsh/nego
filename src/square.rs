@@ -7,6 +7,7 @@ use std::str::FromStr;
 pub struct Square(u8);
 
 impl Default for Square {
+    #[inline]
     fn default() -> Square {
         Square::new(0)
     }
@@ -33,18 +34,22 @@ impl Square {
         Square((((self.0 >> 3) | (self.0 << 3)) & 63) ^ 7)
     }
 
+    #[inline]
     pub fn rot90_fast32(self) -> Square {
         Square((((self.0 as u32).wrapping_mul(0x20800000) >> 26) ^ 7) as u8)
     }
 
+    #[inline]
     pub fn rot180(self) -> Square {
         Square(self.0 ^ 63)
     }
 
+    #[inline]
     pub fn rot270(&self) -> Square {
         Square((((self.0 >> 3) | (self.0 << 3)) & 63) ^ 56)
     }
 
+    #[inline]
     pub fn rot270_fast32(&self) -> Square {
         Square((((self.0 as u32).wrapping_mul(0x20800000) >> 26) ^ 56) as u8)
     }

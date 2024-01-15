@@ -9,25 +9,32 @@ pub struct LUTEntry(pub usize);
 type Entry = (u8, u8, u64, u64);
 
 impl LUTEntry {
+    #[inline]
     pub fn orientation(&self) -> Orientation {
         Orientation::from_index(self.at().0)
     }
 
+    #[inline]
     pub fn position(&self) -> Square {
         Square::new(self.at().1)
     }
 
+    #[inline]
     pub fn mask(&self) -> BitBoard {
         BitBoard(self.at().2)
     }
+
+    #[inline]
     pub fn gaze(&self) -> BitBoard {
         BitBoard(self.at().3)
     }
 
+    #[inline]
     fn at(&self) -> &Entry {
         &MOVE_TAB[self.0]
     }
 
+    #[inline]
     pub fn lookup(
         piece: PieceTypeId,
         position: Square,

@@ -16,6 +16,7 @@ pub struct Rays {
 }
 
 impl Rays {
+    #[inline]
     pub fn new() -> Rays {
         Rays {
             s: EMPTY,
@@ -58,6 +59,7 @@ impl Rays {
         }
     }
 
+    #[inline]
     pub fn lookup(square: Square, orientation: Orientation) -> BitBoard {
         unsafe { RAY_LUT[orientation as usize][square.to_index()] }
     }

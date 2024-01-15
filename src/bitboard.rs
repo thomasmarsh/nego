@@ -200,6 +200,7 @@ impl BitBoard {
         (self.lshift() | self.rshift() | self.ushift() | self.dshift()) ^ self
     }
 
+    #[inline]
     pub fn from_squares(squares: Vec<Square>) -> Self {
         BitBoard(squares.iter().fold(0, |b, sq| b | (1 << sq.to_index())))
     }
@@ -219,6 +220,7 @@ impl BitBoard {
         )
     }
 
+    #[inline]
     pub fn flip_diag_a1h8(self) -> BitBoard {
         const K1: u64 = 0x5500550055005500;
         const K2: u64 = 0x3333000033330000;
