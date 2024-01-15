@@ -16,7 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
+    - name: Build nego
+      run: cargo build --verbose --bin nego
+    - name: Build gen_move_tab
+      run: cargo build --verbose --bin gen_move_tab
     - name: Run tests
       run: cargo test --verbose
