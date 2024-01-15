@@ -154,6 +154,41 @@ surrounded. It is notable that the video presents this as an end game position,
 yet there are still moves available. It may be that this was simply a less
 rigorous example for the purposes of making the video.
 
+### Filled Territories
+
+An implict result of the above decisions is that filled territories are still safe.
+For example, in the following position the kunoji group at **B1** is safe.
+
+````
+   A B C D E F G H
+ 1 . O X . . . . . 1
+ 2 O O X . . . . . 2
+ 3 X X X . . . . . 3
+ 4 . . . . . . . . 4
+ 5 . . . . . . . . 5
+ 6 . . . . . . . . 6
+ 7 . . . . . . . . 7
+ 8 . . . . . . . . 8
+   A B C D E F G H
+````
+
+White is permitted to place within their own territory with a mame at **A1**. This
+wil not be a suicide.
+
+````
+   A B C D E F G H
+ 1 O O X . . . . . 1
+ 2 O O X . . . . . 2
+ 3 X X X . . . . . 3
+ 4 . . . . . . . . 4
+ 5 . . . . . . . . 5
+ 6 . . . . . . . . 6
+ 7 . . . . . . . . 7
+ 8 . . . . . . . . 8
+   A B C D E F G H
+````
+
+
 ## Other Questions
 
 ### Should the game be played with komi?
