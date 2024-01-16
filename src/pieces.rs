@@ -194,11 +194,6 @@ impl PieceList {
     }
 
     #[inline]
-    pub fn empty() -> PieceList {
-        PieceList(0)
-    }
-
-    #[inline]
     pub fn piece_seen_hash() -> PieceSeenHash {
         PieceSeenHash(0)
     }

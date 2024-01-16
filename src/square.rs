@@ -1,5 +1,5 @@
-use crate::coord::*;
-use crate::error::*;
+use crate::coord::{X, Y};
+use crate::error::Error;
 use std::fmt;
 use std::str::FromStr;
 

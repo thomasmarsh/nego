@@ -3,10 +3,27 @@ use crate::coord::{ALL_X, ALL_Y};
 use crate::move_tab::LUTEntry;
 use crate::orientation::Orientation;
 use crate::pieces::{PieceId, PieceList};
-use crate::r#move::{Color, Move, MoveVisitor};
+use crate::r#move::{HasMoves, Move, MoveAccumulator, MoveVisitor};
 use crate::ray::Rays;
 use crate::square::*;
 use crate::zobrist;
+
+#[derive(PartialEq, Clone, Copy, Debug, Eq)]
+pub enum Color {
+    Black,
+    White,
+}
+
+impl Color {
+    #[inline]
+    pub fn next(&self) -> Color {
+        use Color::*;
+        match self {
+            Black => White,
+            White => Black,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct PlayerState {
@@ -343,6 +360,20 @@ impl State {
             hash: 0,
             capture_flag: false,
         }
+    }
+
+    #[inline]
+    pub fn has_moves(&self) -> bool {
+        let mut hm = HasMoves(false);
+        self.board.generate_moves(self.current, &mut hm);
+        hm.0
+    }
+
+    #[inline]
+    pub fn get_moves(&self, moves: &mut Vec<Move>) {
+        let mut ma = MoveAccumulator::new();
+        self.board.generate_moves(self.current, &mut ma);
+        moves.append(&mut ma.0)
     }
 
     #[inline]

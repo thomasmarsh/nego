@@ -9,23 +9,6 @@ use crate::square::Square;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(PartialEq, Clone, Copy, Debug, Eq)]
-pub enum Color {
-    Black,
-    White,
-}
-
-impl Color {
-    #[inline]
-    pub fn next(&self) -> Color {
-        use Color::*;
-        match self {
-            Black => White,
-            White => Black,
-        }
-    }
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Move(u16);
 

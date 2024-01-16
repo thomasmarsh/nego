@@ -10,9 +10,8 @@ mod ray;
 mod square;
 mod zobrist;
 
-use crate::game::State;
-use crate::pieces::PieceId;
-use crate::r#move::{Color, HasMoves, Move, MoveAccumulator};
+use crate::game::{Color, State};
+use crate::r#move::{Move, MoveAccumulator};
 use crate::ray::Rays;
 
 use minimax::Strategy;
@@ -30,19 +29,14 @@ impl minimax::Game for Nego {
 
     #[inline]
     fn generate_moves(state: &State, moves: &mut Vec<Move>) {
-        let mut ma = MoveAccumulator::new();
-        state.board.generate_moves(state.current, &mut ma);
-        moves.append(&mut ma.0)
+        state.get_moves(moves);
     }
 
     #[inline]
     fn get_winner(state: &State) -> Option<minimax::Winner> {
-        let mut hm = HasMoves(false);
-        state.board.generate_moves(state.current, &mut hm);
-        if hm.0 {
+        if state.has_moves() {
             return None;
         }
-
         let b = state.board.black.points();
         let w = state.board.white.points();
 
@@ -70,28 +64,7 @@ impl minimax::Game for Nego {
     }
 
     fn notation(_: &State, m: Move) -> Option<String> {
-        let piece = match m.get_piece() {
-            PieceId::Boss => "BOS",
-            PieceId::Mame => "MAM",
-            PieceId::Nobi => "NOB",
-            PieceId::Koubaku1 => "KB1",
-            PieceId::Koubaku2 => "KB2",
-            PieceId::Koubaku3a => "KB3",
-            PieceId::Koubaku3b => "KB3",
-            PieceId::Kunoji1a => "KJ1",
-            PieceId::Kunoji1b => "KJ1",
-            PieceId::Kunoji2 => "KJ2",
-            PieceId::Kunoji3 => "KJ3",
-            PieceId::Kunoji4 => "KJ4",
-        };
-
-        let pos = format!(
-            "{}{}",
-            ((b'A' + m.position().get_x().to_int()) as char),
-            m.position().get_y().to_int() as u16 + 1
-        );
-
-        Some(format!("{} {}{:?}", piece, pos, m.orientation()))
+        Some(m.notation())
     }
 }
 
@@ -226,8 +199,8 @@ fn demo_minimax() {
         }
         state.dump();
         match if s == 0 {
-            // mcts.choose_move(&state)
-            state.random_move()
+            mcts.choose_move(&state)
+            // state.random_move()
         } else {
             strategy.choose_move(&state)
             // state.random_move()
