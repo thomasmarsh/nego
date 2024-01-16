@@ -76,6 +76,27 @@ capture.
    A B C D E F G H
 ````
 
+This is supported by an example from the
+[tutorial video](https://www.youtube.com/watch?v=I8lCrK9Mjtk&t=43s) shows
+such a position during scoring.
+
+````
+   A B C D E F G H
+ 1 O O O . . . O O 1
+ 2 O O X X O O O O 2
+ 3 X X X X X O O O 3
+ 4 X . O O O O O O 4
+ 5 X X O X O O X X 5
+ 6 X X X X X X O X 6
+ 7 . X X X X O O O 7
+ 8 . X X X . O O O 8
+   A B C D E F G H
+````
+
+The black kunoji group at **G5** would be alive since it is not surrounded by
+orthogonally adjacent opponent pieces. (I.e., there is no adjacent connection
+between **F5** and **G6**.)
+
 
 ### Territory Extension
 
@@ -124,35 +145,13 @@ its safety to adjacent like colored pieces.
 
 ### No Empty Space Capture
 
-*Can a territory be captured if it contains only opponent pieces but no empty spaces?*
+*Can a territory be captured if it contains only opponent pieces but no empty
+spaces?*
 
-It is clear that you can't capture territory just by playing against a wall. (I.e.,
-touching a wall does not mark your stone as safe.) We assume, however, that surrounding
-a piece is sufficient to capture it without requiring additional empty spaces in the
-new territory.
-
-It's important to not that there is a video which shows a position that
-violates this assumption. The
-[tutorial video](https://www.youtube.com/watch?v=I8lCrK9Mjtk&t=43s) shows
-this end came position.
-
-````
-   A B C D E F G H
- 1 O O O . . . O O 1
- 2 O O X X O O O O 2
- 3 X X X X X O O O 3
- 4 X . O O O O O O 4
- 5 X X O X O O X X 5
- 6 X X X X X X O X 6
- 7 . X X X X O O O 7
- 8 . X X X . O O O 8
-   A B C D E F G H
-````
-
-The black kunoji group at **G5** would not be permitted under our rules since it is
-surrounded. It is notable that the video presents this as an end game position,
-yet there are still moves available. It may be that this was simply a less
-rigorous example for the purposes of making the video.
+It is clear that you can't capture territory just by playing against a wall.
+(I.e., touching a wall does not mark your stone as safe.) We assume, however,
+that surrounding a piece is sufficient to capture it without requiring
+additional empty spaces in the new territory.
 
 ### Filled Territories
 
@@ -188,6 +187,8 @@ wil not be a suicide.
    A B C D E F G H
 ````
 
+This approach is supported by the rule that once a territory is safe, it cannot
+be removed from the baord.
 
 ## Other Questions
 
