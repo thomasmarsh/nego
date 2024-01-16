@@ -26,28 +26,39 @@ impl Color {
     }
 }
 
-// TODO: struct PackedMove(u16)
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Move {
-    pub piece: PieceId,  // 4 bit
-    pub entry: LUTEntry, // 11 bit
-}
+pub struct Move(u16);
 
 impl Move {
     #[inline]
+    pub fn new(piece: PieceId, entry: LUTEntry) -> Move {
+        let p = (piece as u16) & 0b1111;
+        let e = (entry.0 as u16) << 4;
+        Move(e | p)
+    }
+
+    #[inline]
+    pub fn get_piece(self) -> PieceId {
+        PieceId::from_index(self.0 & 0b1111).unwrap()
+    }
+
+    pub fn get_lut_entry(self) -> LUTEntry {
+        LUTEntry(self.0.wrapping_shr(4) as usize)
+    }
+
+    #[inline]
     pub fn position(&self) -> Square {
-        self.entry.position()
+        self.get_lut_entry().position()
     }
 
     #[inline]
     pub fn orientation(&self) -> Orientation {
-        self.entry.orientation()
+        self.get_lut_entry().orientation()
     }
 
     #[inline]
     pub fn mask(&self) -> BitBoard {
-        self.entry.mask()
+        self.get_lut_entry().mask()
     }
 
     // First set bit (self.position may be empty on kunoji types)
@@ -58,13 +69,13 @@ impl Move {
 
     #[inline]
     pub fn gaze(&self) -> BitBoard {
-        self.entry.gaze()
+        self.get_lut_entry().gaze()
     }
 
     pub fn notation(&self) -> String {
         format!(
             "{}:{}{:?}",
-            self.piece.piece_type_id().notation(),
+            self.get_piece().piece_type_id().notation(),
             self.position().to_string().to_uppercase(),
             self.orientation()
         )
@@ -116,7 +127,7 @@ impl Move {
 
         let entry =
             LUTEntry::lookup(piece_type, position, orientation).ok_or(Error::LUTEntryNotFound)?;
-        Ok(Move { piece, entry })
+        Ok(Move::new(piece, entry))
     }
 }
 

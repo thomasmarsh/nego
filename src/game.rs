@@ -65,9 +65,10 @@ impl PlayerState {
         }
     }
 
-    pub fn place(&mut self, m: &Move, other: &mut PlayerState) -> bool {
-        self.hand.remove(m.piece);
-        self.move_list.push(*m);
+    pub fn place(&mut self, m: Move, other: &mut PlayerState) -> bool {
+        let piece = m.get_piece();
+        self.hand.remove(piece);
+        self.move_list.push(m);
         self.occupied |= m.mask();
 
         let mut capture_flag = false;
@@ -81,12 +82,12 @@ impl PlayerState {
             // Look for pieces to remove
             other.move_list.retain_mut(|x| {
                 // If this isn't a boss and move was on the acquired territory
-                if x.piece != PieceId::Boss && new.intersects(x.mask()) {
+                if piece != PieceId::Boss && new.intersects(x.mask()) {
                     // Remove from occupied map
                     other.occupied &= !x.mask();
 
                     // Add piece back to hand
-                    other.hand.add(x.piece);
+                    other.hand.add(piece);
 
                     // Remember to rehash the move list
                     capture_flag = true;
@@ -116,7 +117,7 @@ impl PlayerState {
 
     #[inline]
     pub fn points(&self) -> u32 {
-        (self.owned | self.occupied).popcnt()
+        ((!self.owned & self.occupied).popcnt() >> 1) + self.occupied.popcnt()
     }
 
     pub fn moves_str(&self) -> String {
@@ -204,8 +205,8 @@ impl Board {
         let mut ms = self.black.move_list.clone();
         ms.extend(self.white.move_list.clone());
         ms.iter().for_each(|m| {
-            if m.piece == PieceId::Boss {
-                self.draw_boss_rays(m);
+            if m.get_piece() == PieceId::Boss {
+                self.draw_boss_rays(*m);
             } else {
                 self.rays.draw(m.gaze().to_square(), m.orientation());
             }
@@ -213,7 +214,7 @@ impl Board {
     }
 
     #[inline]
-    fn draw_boss_rays(&mut self, m: &Move) {
+    fn draw_boss_rays(&mut self, m: Move) {
         use Orientation::*;
         let nw = m.position();
         let sw = nw.udown();
@@ -231,7 +232,7 @@ impl Board {
     }
 
     #[inline]
-    pub fn place(&mut self, color: Color, m: &Move) -> bool {
+    pub fn place(&mut self, color: Color, m: Move) -> bool {
         // x decrement hand
         // x add to move_list
         // x draw rays (extra for boss)
@@ -242,7 +243,7 @@ impl Board {
             Color::Black => self.black.place(m, &mut self.white),
             Color::White => self.white.place(m, &mut self.black),
         };
-        if m.piece == PieceId::Boss {
+        if m.get_piece() == PieceId::Boss {
             self.boss |= m.mask();
             self.draw_boss_rays(m);
         } else {
@@ -253,7 +254,7 @@ impl Board {
     }
 
     #[inline]
-    fn has_opposite_connection(&self, m: &Move, occupied: BitBoard) -> bool {
+    fn has_opposite_connection(&self, m: Move, occupied: BitBoard) -> bool {
         (occupied | m.mask()).has_opposite_connection(m.to_square())
     }
 
@@ -273,12 +274,9 @@ impl Board {
                 let p = piece.piece_type_id().def();
 
                 for i in p.lut_offset..p.lut_offset + p.moves {
-                    let m = Move {
-                        piece,
-                        entry: LUTEntry(i),
-                    };
+                    let m = Move::new(piece, LUTEntry(i));
 
-                    if self.valid(&m, occupied, owned) {
+                    if self.valid(m, occupied, owned) {
                         visitor.visit(m);
                         if visitor.bailout() {
                             return;
@@ -290,7 +288,7 @@ impl Board {
     }
 
     #[inline]
-    fn valid(&self, m: &Move, occupied: BitBoard, owned: BitBoard) -> bool {
+    fn valid(&self, m: Move, occupied: BitBoard, owned: BitBoard) -> bool {
         // x No overlap with other piece
         // x Not face against edge of board
         // x No eye contact with any other neko
@@ -300,16 +298,16 @@ impl Board {
 
         !m.mask().intersects(self.occupied())
             && !m.mask().intersects(owned)
-            && (m.piece == PieceId::Boss
+            && (m.get_piece() == PieceId::Boss
                 || (!m
                     .gaze()
                     .intersects(self.rays.get(m.orientation().opposite()))
-                    && !self.nobi_paw_overlaps(m.piece, occupied, m)
+                    && !self.nobi_paw_overlaps(m.get_piece(), occupied, m)
                     && !self.has_opposite_connection(m, occupied)))
     }
 
     #[inline]
-    fn nobi_paw_overlaps(&self, piece: PieceId, occupied: BitBoard, m: &Move) -> bool {
+    fn nobi_paw_overlaps(&self, piece: PieceId, occupied: BitBoard, m: Move) -> bool {
         if piece != PieceId::Nobi {
             return false;
         }
@@ -348,34 +346,29 @@ impl State {
     }
 
     #[inline]
-    pub fn place(&mut self, m: &Move) {
+    pub fn place(&mut self, m: Move) {
         self.capture_flag = self.board.place(self.current, m);
     }
 
     #[inline]
-    pub fn hash(&self, m: &Move) -> u64 {
-        let index = m.entry.0;
+    pub fn hash(&self, m: Move) -> u64 {
+        let index = m.get_lut_entry().0;
         let color = self.current as usize & 1;
         // rotational symmetry can't be leveraged because bosses are immobile
         zobrist::HASHES[(index << 1) | color]
     }
 
     #[inline]
-    pub fn update_hash(&mut self, m: &Move) {
+    fn hash_move_list(&self, init: u64, move_list: &[Move]) -> u64 {
+        move_list.iter().fold(init, |h, &p| h ^ self.hash(p))
+    }
+
+    #[inline]
+    pub fn update_hash(&mut self, m: Move) {
         if self.capture_flag {
             // Upon capture, we need to rehash everything since we removed pieces
-            let hash_black = self
-                .board
-                .black
-                .move_list
-                .iter()
-                .fold(0, |h, &p| h ^ self.hash(&p));
-            self.hash = self
-                .board
-                .white
-                .move_list
-                .iter()
-                .fold(hash_black, |h, &p| h ^ self.hash(&p));
+            let hash_black = self.hash_move_list(0, &self.board.black.move_list);
+            self.hash = self.hash_move_list(hash_black, &self.board.white.move_list);
             self.board.redraw_rays();
             self.capture_flag = false;
         } else {
@@ -386,8 +379,8 @@ impl State {
     pub fn dump(&self) {
         println!("Color map:");
         self.board.print_color_map();
-        //println!("\nRays:");
-        //println!("{}", self.board.rays);
+        // println!("\nRays:");
+        // println!("{}", self.board.rays);
         println!("Occupied:");
         println!("{}", self.board.occupied());
         println!("Owned:");

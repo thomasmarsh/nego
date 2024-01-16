@@ -58,9 +58,9 @@ impl minimax::Game for Nego {
     #[inline]
     fn apply(s: &mut State, m: Move) -> Option<State> {
         let mut state = s.clone();
-        state.place(&m);
+        state.place(m);
         state.current = state.current.next();
-        state.update_hash(&m);
+        state.update_hash(m);
         Some(state)
     }
 
@@ -70,7 +70,7 @@ impl minimax::Game for Nego {
     }
 
     fn notation(_: &State, m: Move) -> Option<String> {
-        let piece = match m.piece {
+        let piece = match m.get_piece() {
             PieceId::Boss => "BOS",
             PieceId::Mame => "MAM",
             PieceId::Nobi => "NOB",
@@ -151,7 +151,7 @@ fn demo_rnd() {
         }
 
         let idx: usize = rng.gen_range(0..ma.0.len());
-        state.place(&ma.0[idx].clone());
+        state.place(ma.0[idx]);
         state.current = state.current.next();
 
         state.board.print_color_map();
@@ -204,16 +204,17 @@ fn demo_minimax() {
     // Iterative
     let mut strategy =
         minimax::IterativeSearch::new(Eval, minimax::IterativeOptions::new().verbose());
-    strategy.set_timeout(std::time::Duration::from_secs(10));
+    strategy.set_timeout(std::time::Duration::from_secs(60));
 
     // Negamax
     // let mut strategy = minimax::Negamax::new(Eval, 4);
 
     // MCTS
-    // let opts = minimax::MCTSOptions::default().verbose();
-    // let mut strategy: minimax::MonteCarloTreeSearch<Nego> =
-    // minimax::MonteCarloTreeSearch::new(opts);
-    // strategy.set_timeout(Duration::from_secs(10));
+    let opts = minimax::MCTSOptions::default()
+        .verbose()
+        .with_rollouts_before_expanding(5);
+    let mut mcts: minimax::MonteCarloTreeSearch<Nego> = minimax::MonteCarloTreeSearch::new(opts);
+    mcts.set_timeout(Duration::from_secs(60));
 
     //let mut strategies = [&rand, &iterative];
 
@@ -225,6 +226,7 @@ fn demo_minimax() {
         }
         state.dump();
         match if s == 0 {
+            // mcts.choose_move(&state)
             state.random_move()
         } else {
             strategy.choose_move(&state)
