@@ -1,7 +1,9 @@
-use crate::bitboard::{BitBoard, EMPTY};
-use crate::coord::{ALL_X, ALL_Y};
-use crate::orientation::{Orientation, ALL_ORIENTATIONS};
-use crate::square::{Square, ALL_SQUARES};
+use crate::core::{
+    bitboard::{BitBoard, EMPTY},
+    coord::{ALL_X, ALL_Y},
+    orientation::{Orientation, ALL_ORIENTATIONS},
+    square::{Square, ALL_SQUARES},
+};
 
 use std::fmt;
 

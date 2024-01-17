@@ -1,7 +1,6 @@
-use crate::bitboard::BitBoard;
-use crate::orientation::Orientation;
-use crate::pieces::PieceTypeId;
-use crate::square::Square;
+use crate::core::{
+    bitboard::BitBoard, orientation::Orientation, pieces::PieceTypeId, square::Square,
+};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct LUTEntry(pub usize);

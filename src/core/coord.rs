@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::core::error::Error;
 use std::str::FromStr;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Debug, Hash)]

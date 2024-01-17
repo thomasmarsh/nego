@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::square::Square;
+use crate::core::{error::Error, square::Square};
 
 use std::str::FromStr;
 

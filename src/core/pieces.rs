@@ -1,4 +1,4 @@
-use crate::orientation::Orientation;
+use crate::core::orientation::Orientation;
 
 pub struct PieceType {
     pub name_en: &'static str,

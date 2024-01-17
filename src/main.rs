@@ -1,18 +1,10 @@
-mod bitboard;
-mod coord;
-mod error;
-mod game;
-mod r#move;
-mod move_tab;
-mod orientation;
-mod pieces;
-mod ray;
-mod square;
-mod zobrist;
+mod core;
 
-use crate::game::{Color, State};
-use crate::r#move::Move;
-use crate::ray::Rays;
+use crate::core::{
+    game::{Color, State},
+    r#move::Move,
+    ray::Rays,
+};
 
 use minimax::{RolloutPolicy, Strategy};
 use rand::seq::SliceRandom;

@@ -1,5 +1,7 @@
-use crate::coord::{ALL_X, ALL_Y, X, Y};
-use crate::square::Square;
+use crate::core::{
+    coord::{ALL_X, ALL_Y, X, Y},
+    square::Square,
+};
 
 use std::fmt;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Mul, Not};

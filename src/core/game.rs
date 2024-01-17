@@ -1,12 +1,14 @@
-use crate::bitboard::{BitBoard, EMPTY};
-use crate::coord::{ALL_X, ALL_Y};
-use crate::move_tab::LUTEntry;
-use crate::orientation::Orientation;
-use crate::pieces::{PieceId, PieceList};
-use crate::r#move::{HasMoves, Move, MoveAccumulator, MoveVisitor};
-use crate::ray::Rays;
-use crate::square::*;
-use crate::zobrist;
+use crate::core::{
+    bitboard::{BitBoard, EMPTY},
+    coord::{ALL_X, ALL_Y},
+    move_tab::LUTEntry,
+    orientation::Orientation,
+    pieces::{PieceId, PieceList},
+    r#move::{HasMoves, Move, MoveAccumulator, MoveVisitor},
+    ray::Rays,
+    square::*,
+    zobrist,
+};
 
 #[derive(PartialEq, Clone, Copy, Debug, Eq)]
 pub enum Color {

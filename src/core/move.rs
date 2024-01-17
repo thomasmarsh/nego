@@ -1,10 +1,12 @@
-use crate::bitboard::BitBoard;
-use crate::coord::{X, Y};
-use crate::error::Error;
-use crate::move_tab::LUTEntry;
-use crate::orientation::Orientation;
-use crate::pieces::{PieceId, PieceTypeId};
-use crate::square::Square;
+use crate::core::{
+    bitboard::BitBoard,
+    coord::{X, Y},
+    error::Error,
+    move_tab::LUTEntry,
+    orientation::Orientation,
+    pieces::{PieceId, PieceTypeId},
+    square::Square,
+};
 
 use std::fmt;
 use std::str::FromStr;

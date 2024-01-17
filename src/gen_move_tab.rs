@@ -1,20 +1,12 @@
-mod bitboard;
-mod coord;
-mod error;
-mod game;
-mod r#move;
-mod move_tab;
-mod orientation;
-mod pieces;
-mod ray;
-mod square;
-mod zobrist;
+mod core;
 
-use crate::bitboard::BitBoard;
-use crate::coord::X;
-use crate::orientation::{Orientation, ALL_ORIENTATIONS};
-use crate::pieces::{PieceTypeId, ALL_PIECE_TYPE_IDS};
-use crate::square::{Square, ALL_SQUARES};
+use crate::core::{
+    bitboard::BitBoard,
+    coord::X,
+    orientation::{Orientation, ALL_ORIENTATIONS},
+    pieces::{PieceTypeId, ALL_PIECE_TYPE_IDS},
+    square::{Square, ALL_SQUARES},
+};
 
 use std::fmt;
 
