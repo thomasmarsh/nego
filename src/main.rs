@@ -11,10 +11,11 @@ mod square;
 mod zobrist;
 
 use crate::game::{Color, State};
-use crate::r#move::{Move, MoveAccumulator};
+use crate::r#move::Move;
 use crate::ray::Rays;
 
-use minimax::Strategy;
+use minimax::{RolloutPolicy, Strategy};
+use rand::seq::SliceRandom;
 
 use rustyline::error::ReadlineError;
 
@@ -71,19 +72,19 @@ impl minimax::Game for Nego {
 impl State {
     pub fn random_move(&self) -> Option<Move> {
         use rand::Rng;
-        let mut ma = MoveAccumulator::new();
-        self.board.generate_moves(self.current, &mut ma);
+        let mut ms = Vec::new();
+        self.get_moves(&mut ms);
         trace!("moves:");
-        for &m in &ma.0 {
+        for &m in &ms {
             trace!("{:?}", m);
         }
-        if ma.0.is_empty() {
+        if ms.is_empty() {
             None
         } else {
             let mut rng = rand::thread_rng();
-            let i = rng.gen_range(0..ma.0.len());
-            trace!("picked: {:?}", ma.0[i]);
-            Some(ma.0[i])
+            let i = rng.gen_range(0..ms.len());
+            trace!("picked: {:?}", ms[i]);
+            Some(ms[i])
         }
     }
 }
@@ -113,18 +114,18 @@ fn demo_rnd() {
 
     let mut rng = rand::thread_rng();
     loop {
-        let mut ma = MoveAccumulator::new();
-        state.board.generate_moves(state.current, &mut ma);
-        if ma.0.is_empty() {
+        let mut ms = Vec::new();
+        state.get_moves(&mut ms);
+        if ms.is_empty() {
             break;
         }
         println!("Moves:");
-        for m in &ma.0 {
+        for m in &ms {
             println!("- {:?}", m);
         }
 
-        let idx: usize = rng.gen_range(0..ma.0.len());
-        state.place(ma.0[idx]);
+        let idx: usize = rng.gen_range(0..ms.len());
+        state.place(ms[idx]);
         state.current = state.current.next();
 
         state.board.print_color_map();
@@ -162,6 +163,27 @@ fn cli() -> rustyline::Result<()> {
     Ok(())
 }
 
+struct Policy;
+
+impl RolloutPolicy for Policy {
+    type G = Nego;
+    fn random_move(
+        &self,
+        state: &mut <Nego as minimax::Game>::S,
+        moves: &mut Vec<<Nego as minimax::Game>::M>,
+        rng: &mut rand::rngs::ThreadRng,
+    ) -> <Nego as minimax::Game>::M {
+        state.get_moves(moves);
+        // TODO:
+        // - wieghted random choice
+        // - increased weight for advantageous move
+        // - prefer moves that block potential connections
+        // - prefer moves that connect territory
+        // - prefer moves that create territory
+        *moves.choose(rng).unwrap()
+    }
+}
+
 fn demo_minimax() {
     use minimax::Game;
     use minimax::{IterativeOptions, IterativeSearch, ParallelOptions, ParallelSearch};
@@ -186,7 +208,8 @@ fn demo_minimax() {
     let opts = minimax::MCTSOptions::default()
         .verbose()
         .with_rollouts_before_expanding(5);
-    let mut mcts: minimax::MonteCarloTreeSearch<Nego> = minimax::MonteCarloTreeSearch::new(opts);
+    let mut mcts: minimax::MonteCarloTreeSearch<Nego> =
+        minimax::MonteCarloTreeSearch::new_with_policy(opts, Box::new(Policy));
     mcts.set_timeout(Duration::from_secs(60));
 
     //let mut strategies = [&rand, &iterative];
