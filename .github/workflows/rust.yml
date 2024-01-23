@@ -18,8 +18,9 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build nego
       run: cargo build --verbose --bin nego
-    - name: Build konego
-      run: cargo build --verbose --bin konego
+    # TODO: depends on alsa
+    # - name: Build konego
+    #   run: cargo build --verbose --bin konego
     - name: Build gen_move_tab
       run: cargo build --verbose --bin gen_move_tab
     - name: Run tests
