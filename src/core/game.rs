@@ -60,6 +60,7 @@ fn find_territory(b: BitBoard, group: BitBoard) -> BitBoard {
 
         // If this board position is empty
         if !b.test_square(pos) {
+            // TODO: remove check - floodfill8 has a bailout
             // Ge the connected group
             let area = (!b).floodfill8(pos);
 
@@ -148,7 +149,7 @@ impl PlayerState {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Board {
     pub black: PlayerState,
     pub white: PlayerState,
@@ -345,7 +346,7 @@ impl Board {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct State {
     pub current: Color,
     pub board: Board,
@@ -412,8 +413,8 @@ impl State {
     pub fn dump(&self) {
         println!("Color map:");
         self.board.print_color_map();
-        // println!("\nRays:");
-        // println!("{}", self.board.rays);
+        println!("\nRays:");
+        println!("{}", self.board.rays);
         println!("Occupied:");
         println!("{}", self.board.occupied());
         println!("Owned:");

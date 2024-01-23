@@ -9,7 +9,7 @@ use std::fmt;
 
 static mut RAY_LUT: [[BitBoard; 64]; 4] = [[BitBoard(0); 64]; 4];
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Rays {
     pub s: BitBoard,
     pub w: BitBoard,
