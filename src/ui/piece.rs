@@ -28,8 +28,11 @@ enum Part {
 impl Part {
     #[inline]
     fn rot90(&self, bounds: (u8, u8)) -> Part {
+        if bounds == (1, 1) {
+            return *self;
+        }
         let (_width, height) = bounds;
-        // assert!(height > 0 && width > 0);
+        assert!(height > 0 && _width > 0);
         match *self {
             Part::Circle(x, y) => Part::Circle(height - 2 - y, x),
             Part::Rect(x, y, w, h) => Part::Rect(height - 1 - y - h, x, h, w),
@@ -272,5 +275,37 @@ pub fn mk_kunoji4(color: Color) -> Piece {
             Rect(0, 0, 2, 1),
         ],
         ..mk_piece(color)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn preserve_origin() {
+        use Orientation::*;
+        let c = Color::Black;
+        for (label, piece) in [
+            ("boss", mk_boss(c)),
+            ("mame", mk_mame(c)),
+            ("nobi", mk_nobi(c)),
+            ("koubaku1", mk_koubaku1(c)),
+            ("koubaku2", mk_koubaku2(c)),
+            ("koubaku3", mk_koubaku3(c)),
+            ("kunoji1", mk_kunoji1(c)),
+            ("kunoji2", mk_kunoji2(c)),
+            ("kunoji3", mk_kunoji3(c)),
+            ("kunoji4", mk_kunoji4(c)),
+        ] {
+            for y in 0..8 {
+                for x in 0..8 {
+                    for dir in [S, W, N, E] {
+                        println!("{} at ({}, {}) {:?}", label, x, y, dir);
+                        assert_eq!(piece.translate(x, y).facing(dir).offset, (x as _, y as _))
+                    }
+                }
+            }
+        }
     }
 }
