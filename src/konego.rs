@@ -26,15 +26,15 @@ pub enum WorkerState {
 
 #[derive(Debug)]
 pub struct ThreadData {
-    pub new_state: Mutex<game::State>,
-    pub worker_state: AtomicCell<WorkerState>,
+    pub new_state: game::State,
+    pub worker_state: WorkerState,
 }
 
 impl ThreadData {
     fn new() -> Self {
         Self {
-            new_state: Mutex::new(game::State::new()),
-            worker_state: AtomicCell::new(WorkerState::Idle),
+            new_state: game::State::new(),
+            worker_state: WorkerState::Idle,
         }
     }
 }
@@ -56,33 +56,32 @@ impl GameLoop for MyGame {
     }
 }
 
+#[inline]
+fn draw_one(piece: &r#move::Move, color: game::Color) {
+    use core::pieces::PieceTypeId::*;
+    let pos = piece.position().get_coord();
+    let (x, y) = (pos.0 as u8, pos.1 as u8);
+    let dir = piece.orientation();
+    use piece::*;
+    match piece.get_piece().piece_type_id() {
+        Boss => mk_boss(color),
+        Mame => mk_mame(color),
+        Nobi => mk_nobi(color),
+        Koubaku1 => mk_koubaku1(color),
+        Koubaku2 => mk_koubaku2(color),
+        Koubaku3 => mk_koubaku3(color),
+        Kunoji1 => mk_kunoji1(color),
+        Kunoji2 => mk_kunoji2(color),
+        Kunoji3 => mk_kunoji3(color),
+        Kunoji4 => mk_kunoji4(color),
+    }
+    .translate(x as _, y as _)
+    .facing(dir)
+    .draw();
+}
+
 impl MyGame {
     fn draw(&self) {
-        #[inline]
-        fn draw_one(piece: &r#move::Move, color: game::Color) {
-            use core::pieces::PieceTypeId::*;
-            let pos = piece.position().get_coord();
-            let (x, y) = (pos.0 as u8, pos.1 as u8);
-            let dir = piece.orientation();
-            let drawable = match piece.get_piece().piece_type_id() {
-                Boss => piece::mk_boss(color),
-                Mame => piece::mk_mame(color),
-                Nobi => piece::mk_nobi(color),
-                Koubaku1 => piece::mk_koubaku1(color),
-                Koubaku2 => piece::mk_koubaku2(color),
-                Koubaku3 => piece::mk_koubaku3(color),
-                Kunoji1 => piece::mk_kunoji1(color),
-                Kunoji2 => piece::mk_kunoji2(color),
-                Kunoji3 => piece::mk_kunoji3(color),
-                Kunoji4 => piece::mk_kunoji4(color),
-            }
-            .translate(x as _, y as _)
-            .facing(dir);
-
-            // println!("input: {:}", piece);
-            // println!("output: {:?}", drawable);
-            drawable.draw();
-        }
         self.state
             .board
             .black
@@ -100,13 +99,13 @@ impl MyGame {
     fn update_state(&mut self) {
         let state = {
             let lock = self.thread_state.lock();
-            lock.worker_state.load()
+            lock.worker_state
         };
         match state {
             WorkerState::Idle => {
                 {
-                    let lock = self.thread_state.lock();
-                    lock.worker_state.store(WorkerState::Working);
+                    let mut lock = self.thread_state.lock();
+                    lock.worker_state = WorkerState::Working;
                 }
 
                 let work = self.state.clone();
@@ -114,28 +113,26 @@ impl MyGame {
 
                 _ = std::thread::spawn(move || {
                     let new_state_opt = match work.current {
-                        game::Color::Black => crate::ai::step_random(&work),
+                        game::Color::Black => crate::ai::step_mcts(&work),
                         game::Color::White => crate::ai::step_iterative(&work),
                     };
 
                     if let Some(new_state) = new_state_opt {
-                        let lock = thread_state.lock();
-                        lock.worker_state.store(WorkerState::Ready);
-                        let mut state = lock.new_state.lock();
-                        *state = new_state;
+                        let mut lock = thread_state.lock();
+                        lock.worker_state = WorkerState::Ready;
+                        lock.new_state = new_state;
                     } else {
-                        let lock = thread_state.lock();
-                        lock.worker_state.store(WorkerState::Done);
+                        let mut lock = thread_state.lock();
+                        lock.worker_state = WorkerState::Done;
                     }
                 });
             }
             WorkerState::Working => {}
             WorkerState::Ready => {
                 {
-                    let lock = self.thread_state.lock();
-                    lock.worker_state.store(WorkerState::Idle);
-                    let change = lock.new_state.lock();
-                    self.state = change.clone();
+                    let mut lock = self.thread_state.lock();
+                    lock.worker_state = WorkerState::Idle;
+                    self.state = lock.new_state.clone();
                 }
                 self.state.dump();
             }
