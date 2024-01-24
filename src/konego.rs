@@ -4,8 +4,9 @@ mod ui;
 
 use comfy::*;
 
-use crate::core::{game, r#move, ray::Rays};
-use crate::ui::{draw, piece};
+use core::{game, r#move, ray::Rays};
+use game::Color::*;
+use ui::{draw, piece};
 
 #[derive(Debug)]
 pub struct MyGame {
@@ -77,20 +78,53 @@ fn draw_one(piece: &r#move::Move, color: game::Color) {
     .draw();
 }
 
+fn set_work_state(thread_state: &Arc<Mutex<ThreadData>>, state: WorkerState) {
+    let mut lock = thread_state.lock();
+    lock.worker_state = state;
+}
+
+impl game::PlayerState {
+    #[inline]
+    fn draw(&self, color: game::Color) {
+        self.move_list.iter().for_each(|m| draw_one(m, color));
+    }
+}
+
 impl MyGame {
     fn draw(&self) {
-        self.state
-            .board
-            .black
-            .move_list
-            .iter()
-            .for_each(|m| draw_one(m, game::Color::Black));
-        self.state
-            .board
-            .white
-            .move_list
-            .iter()
-            .for_each(|m| draw_one(m, game::Color::White));
+        self.state.board.black.draw(Black);
+        self.state.board.white.draw(White);
+    }
+
+    fn spawn_worker(&mut self) {
+        set_work_state(&self.thread_state, WorkerState::Working);
+
+        let work = self.state.clone();
+        let thread_state = self.thread_state.clone();
+
+        _ = std::thread::spawn(move || {
+            let new_state_opt = match work.current {
+                Black => ai::step_mcts(&work),
+                White => ai::step_iterative(&work),
+            };
+
+            if let Some(new_state) = new_state_opt {
+                let mut lock = thread_state.lock();
+                lock.worker_state = WorkerState::Ready;
+                lock.new_state = new_state;
+            } else {
+                set_work_state(&thread_state, WorkerState::Done);
+            }
+        });
+    }
+
+    fn finalize_work(&mut self) {
+        {
+            let mut lock = self.thread_state.lock();
+            lock.worker_state = WorkerState::Idle;
+            self.state = lock.new_state.clone();
+        }
+        self.state.dump();
     }
 
     fn update_state(&mut self) {
@@ -99,41 +133,10 @@ impl MyGame {
             lock.worker_state
         };
         match state {
-            WorkerState::Idle => {
-                {
-                    let mut lock = self.thread_state.lock();
-                    lock.worker_state = WorkerState::Working;
-                }
-
-                let work = self.state.clone();
-                let thread_state = self.thread_state.clone();
-
-                _ = std::thread::spawn(move || {
-                    let new_state_opt = match work.current {
-                        game::Color::Black => crate::ai::step_mcts(&work),
-                        game::Color::White => crate::ai::step_iterative(&work),
-                    };
-
-                    if let Some(new_state) = new_state_opt {
-                        let mut lock = thread_state.lock();
-                        lock.worker_state = WorkerState::Ready;
-                        lock.new_state = new_state;
-                    } else {
-                        let mut lock = thread_state.lock();
-                        lock.worker_state = WorkerState::Done;
-                    }
-                });
-            }
-            WorkerState::Working => {}
-            WorkerState::Ready => {
-                {
-                    let mut lock = self.thread_state.lock();
-                    lock.worker_state = WorkerState::Idle;
-                    self.state = lock.new_state.clone();
-                }
-                self.state.dump();
-            }
-            WorkerState::Done => {}
+            WorkerState::Idle => self.spawn_worker(),
+            WorkerState::Working => (),
+            WorkerState::Ready => self.finalize_work(),
+            WorkerState::Done => (),
         }
     }
 }
