@@ -102,8 +102,7 @@ impl PlayerState {
             // Look for pieces to remove
             other.move_list.retain_mut(|x| {
                 // If this isn't a boss and move was on the acquired territory
-                // TODO: apparently this boss check isn't working
-                if piece != PieceId::Boss && new.intersects(x.mask()) {
+                if x.get_piece() != PieceId::Boss && new.intersects(x.mask()) {
                     // Remove from occupied map
                     other.occupied &= !x.mask();
 
@@ -430,5 +429,61 @@ impl State {
         print!("- hand: ");
         self.board.white.hand.dump();
         println!("- moves: {}", self.board.white.moves_str());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::{
+        move_tab::LUTEntry, orientation::Orientation, pieces::PieceId, r#move::Move, square::Square,
+    };
+
+    use super::*;
+
+    fn mk_move(piece: PieceId, pos: (u8, u8), orientation: Orientation) -> Move {
+        let entry = LUTEntry::lookup(
+            piece.piece_type_id(),
+            Square::from_indices(pos.0 as usize, pos.1 as usize),
+            orientation,
+        )
+        .unwrap();
+        Move::new(piece, entry)
+    }
+
+    fn play_moves(state: &mut State, moves: &[(PieceId, (u8, u8), Orientation)]) {
+        moves.iter().for_each(|(a, b, c)| {
+            state.place(mk_move(*a, *b, *c));
+            state.current = state.current.next();
+        });
+    }
+
+    #[test]
+    fn no_capture_boss() {
+        use Orientation::*;
+        use PieceId::*;
+
+        let mut state = State::new();
+        let first_boss = mk_move(Boss, (0, 0), S);
+        state.place(first_boss);
+        state.current = state.current.next();
+        state.dump();
+        let occupied = state.board.black.occupied;
+
+        play_moves(
+            &mut state,
+            &[
+                (Boss, (0, 2), S), // W
+                (Mame, (5, 5), S), // B
+            ],
+        );
+
+        println!("before placement:");
+        state.dump();
+        state.place(mk_move(Nobi, (2, 0), W)); // W
+        println!("after placement:");
+        state.dump();
+
+        assert!(state.board.black.occupied & occupied == occupied);
+        assert_eq!(state.board.black.move_list[0].get_piece(), Boss);
     }
 }
