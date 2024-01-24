@@ -9,48 +9,55 @@ use comfy::*;
 use crate::core::{game, r#move};
 use crate::ui::{draw, piece};
 
-// As in other state-based example we define a global state object
-// for our game.
 #[derive(Debug)]
 pub struct MyGame {
-    pub pieces: Vec<piece::Piece>,
     pub state: game::State,
+    pub thread_state: Arc<Mutex<ThreadData>>,
+}
+
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum WorkerState {
+    Idle,
+    Working,
+    Ready,
+    Done,
+}
+
+#[derive(Debug)]
+pub struct ThreadData {
+    pub new_state: Mutex<game::State>,
+    pub worker_state: AtomicCell<WorkerState>,
+}
+
+impl ThreadData {
+    fn new() -> Self {
+        Self {
+            new_state: Mutex::new(game::State::new()),
+            worker_state: AtomicCell::new(WorkerState::Idle),
+        }
+    }
 }
 
 // Everything interesting happens here.
 impl GameLoop for MyGame {
     fn new(_c: &mut EngineState) -> Self {
         Rays::build_lut();
-        // let piece_id = core::pieces::PieceId::Kunoji4;
-        // let mut state = game::State::new();
-        // state.place(r#move::Move::new(
-        // piece_id,
-        // core::move_tab::LUTEntry(piece_id.piece_type_id().def().lut_offset),
-        // ));
-
         Self {
-            pieces: vec![],
             state: game::State::new(),
+            thread_state: Arc::new(Mutex::new(ThreadData::new())),
         }
     }
 
     fn update(&mut self, _c: &mut EngineContext) {
-        let new_state_opt = match self.state.current {
-            game::Color::Black => crate::ai::step_random(&self.state),
-            game::Color::White => crate::ai::step_iterative(&self.state),
-        };
-        if let Some(new_state) = new_state_opt {
-            self.state = new_state;
-        }
-        self.state.dump();
+        self.update_state();
+        draw::board();
         self.draw();
     }
 }
 
 impl MyGame {
     fn draw(&self) {
-        draw::board();
-
         #[inline]
         fn draw_one(piece: &r#move::Move, color: game::Color) {
             use core::pieces::PieceTypeId::*;
@@ -72,8 +79,8 @@ impl MyGame {
             .translate(x as _, y as _)
             .facing(dir);
 
-            println!("input: {:}", piece);
-            println!("output: {:?}", drawable);
+            // println!("input: {:}", piece);
+            // println!("output: {:?}", drawable);
             drawable.draw();
         }
         self.state
@@ -88,6 +95,52 @@ impl MyGame {
             .move_list
             .iter()
             .for_each(|m| draw_one(m, game::Color::White));
+    }
+
+    fn update_state(&mut self) {
+        let state = {
+            let lock = self.thread_state.lock();
+            lock.worker_state.load()
+        };
+        match state {
+            WorkerState::Idle => {
+                {
+                    let lock = self.thread_state.lock();
+                    lock.worker_state.store(WorkerState::Working);
+                }
+
+                let work = self.state.clone();
+                let thread_state = self.thread_state.clone();
+
+                _ = std::thread::spawn(move || {
+                    let new_state_opt = match work.current {
+                        game::Color::Black => crate::ai::step_random(&work),
+                        game::Color::White => crate::ai::step_iterative(&work),
+                    };
+
+                    if let Some(new_state) = new_state_opt {
+                        let lock = thread_state.lock();
+                        lock.worker_state.store(WorkerState::Ready);
+                        let mut state = lock.new_state.lock();
+                        *state = new_state;
+                    } else {
+                        let lock = thread_state.lock();
+                        lock.worker_state.store(WorkerState::Done);
+                    }
+                });
+            }
+            WorkerState::Working => {}
+            WorkerState::Ready => {
+                {
+                    let lock = self.thread_state.lock();
+                    lock.worker_state.store(WorkerState::Idle);
+                    let change = lock.new_state.lock();
+                    self.state = change.clone();
+                }
+                self.state.dump();
+            }
+            WorkerState::Done => {}
+        }
     }
 }
 
