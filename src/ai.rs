@@ -55,18 +55,12 @@ impl minimax::Game for Nego {
 
 impl State {
     pub fn random_move(&self, rng: &mut impl rand::Rng) -> Option<Move> {
-        use rand::Rng;
         let mut ms = Vec::new();
         self.get_moves(&mut ms);
-        // trace!("moves:");
-        // for &m in &ms {
-        // trace!("{:?}", m);
-        // }
         if ms.is_empty() {
             None
         } else {
             let i = rng.gen_range(0..ms.len());
-            // trace!("picked: {:?}", ms[i]);
             Some(ms[i])
         }
     }
@@ -158,9 +152,9 @@ pub fn step_mcts(state: &State) -> Option<State> {
         .with_rollouts_before_expanding(5);
     let mut strategy: minimax::MonteCarloTreeSearch<Nego> =
         minimax::MonteCarloTreeSearch::new_with_policy(opts, Box::new(Policy));
-    strategy.set_timeout(Duration::from_secs(10));
+    strategy.set_timeout(Duration::from_secs(5));
 
-    if Nego::get_winner(&state).is_some() {
+    if Nego::get_winner(state).is_some() {
         return None;
     }
 
@@ -179,7 +173,7 @@ pub fn step_parallel(state: &State) -> Option<State> {
     strategy.set_max_depth(12);
     strategy.set_timeout(std::time::Duration::from_secs(90));
 
-    if Nego::get_winner(&state).is_some() {
+    if Nego::get_winner(state).is_some() {
         return None;
     }
 
@@ -192,7 +186,7 @@ pub fn step_parallel(state: &State) -> Option<State> {
 pub fn step_negamax(state: &State) -> Option<State> {
     state.dump();
     let mut strategy = minimax::Negamax::new(Eval, 4);
-    if Nego::get_winner(&state).is_some() {
+    if Nego::get_winner(state).is_some() {
         return None;
     }
 
@@ -207,9 +201,9 @@ pub fn step_iterative(state: &State) -> Option<State> {
 
     let mut strategy =
         minimax::IterativeSearch::new(Eval, minimax::IterativeOptions::new().verbose());
-    strategy.set_timeout(std::time::Duration::from_secs(60));
+    strategy.set_timeout(std::time::Duration::from_secs(5));
 
-    if Nego::get_winner(&state).is_some() {
+    if Nego::get_winner(state).is_some() {
         return None;
     }
 

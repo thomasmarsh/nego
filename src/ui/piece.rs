@@ -28,7 +28,7 @@ enum Part {
 impl Part {
     #[inline]
     fn rot90(&self, bounds: (u8, u8)) -> Part {
-        let (width, height) = bounds;
+        let (_width, height) = bounds;
         // assert!(height > 0 && width > 0);
         match *self {
             Part::Circle(x, y) => Part::Circle(height - 2 - y, x),
@@ -91,6 +91,7 @@ impl Piece {
     #[inline]
     pub fn rot90(&self) -> Piece {
         let bounds = self.bounds();
+        // TODO: Mame's don't rot270 correctly and end up displaced
         Piece {
             parts: self.parts.iter().map(|p| p.rot90(bounds)).collect(),
             facing: self.facing.rot90(),
@@ -125,18 +126,10 @@ impl Piece {
     }
 
     #[inline]
-    fn get_color(&self) -> comfy::Color {
-        match self.color {
-            Color::Black => comfy::Color::rgb8(0, 0, 0),
-            Color::White => comfy::Color::rgb8(0xff, 0xff, 0xff),
-        }
-    }
-
-    #[inline]
     pub fn draw(&self) {
         use crate::ui::draw;
 
-        let c = self.get_color();
+        let c = self.color;
         for part in &self.parts {
             match part.translate(self.offset.0, self.offset.1) {
                 Part::Circle(x, y) => draw::circle(c, x, y),

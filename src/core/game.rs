@@ -102,6 +102,7 @@ impl PlayerState {
             // Look for pieces to remove
             other.move_list.retain_mut(|x| {
                 // If this isn't a boss and move was on the acquired territory
+                // TODO: apparently this boss check isn't working
                 if piece != PieceId::Boss && new.intersects(x.mask()) {
                     // Remove from occupied map
                     other.occupied &= !x.mask();
@@ -413,19 +414,19 @@ impl State {
     pub fn dump(&self) {
         println!("Color map:");
         self.board.print_color_map();
-        println!("\nRays:");
-        println!("{}", self.board.rays);
+        // println!("\nRays:");
+        // println!("{}", self.board.rays);
         println!("Occupied:");
         println!("{}", self.board.occupied());
         println!("Owned:");
         self.board.print_owner_map();
 
-        println!("Black:");
+        println!("Black [{}]", self.board.black.points());
         print!("- hand: ");
         self.board.black.hand.dump();
         println!("- moves: {}", self.board.black.moves_str());
 
-        println!("White:");
+        println!("White [{}]", self.board.white.points());
         print!("- hand: ");
         self.board.white.hand.dump();
         println!("- moves: {}", self.board.white.moves_str());

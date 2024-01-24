@@ -10,9 +10,6 @@ fn main() -> rustyline::Result<()> {
     info!("initializing ray LUT");
     core::ray::Rays::build_lut();
 
-    // cli()
-
-    //dem();
     ai::demo_minimax();
     Ok(())
 }
