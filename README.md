@@ -15,3 +15,5 @@ There are some gaps in the rules sheet addressed in the
 [QUESTIONS](doc/QUESTIONS.md) doc.
 
 The implementation is pretty rough right now.
+
+![screenshot](doc/screenshot.png?raw=true)
