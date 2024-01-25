@@ -113,13 +113,6 @@ impl Rays {
     fn is_set(&self, square: Square, orientation: Orientation) -> bool {
         self.get(orientation).test_square(square)
     }
-
-    fn debug(&self) {
-        for o in ALL_ORIENTATIONS {
-            println!("{:?}:", o);
-            println!("{}", self.get(o));
-        }
-    }
 }
 
 impl fmt::Display for Rays {
