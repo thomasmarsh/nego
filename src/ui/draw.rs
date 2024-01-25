@@ -3,7 +3,7 @@ use comfy::{
     screen_width, BlendMode, Color, TextureParams, Vec2,
 };
 
-use crate::game;
+use crate::core::game;
 
 const SQUARE_SIZE: f32 = 80.;
 const SQUARE_TRIM: f32 = 4.;

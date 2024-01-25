@@ -23,6 +23,11 @@ impl Move {
     }
 
     #[inline]
+    pub fn get_raw_value(self) -> u16 {
+        self.0
+    }
+
+    #[inline]
     pub fn get_piece(self) -> PieceId {
         PieceId::from_index(self.0 & 0b1111).unwrap()
     }

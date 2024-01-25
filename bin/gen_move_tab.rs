@@ -1,6 +1,4 @@
-mod core;
-
-use crate::core::{
+use nego::core::{
     bitboard::BitBoard,
     coord::X,
     orientation::{Orientation, ALL_ORIENTATIONS},

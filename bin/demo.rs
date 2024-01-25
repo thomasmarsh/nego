@@ -1,5 +1,4 @@
-mod agent;
-mod core;
+use nego::{agent, core};
 
 #[macro_use]
 extern crate log;

@@ -4,18 +4,22 @@ version = "0.1.0"
 edition = "2021"
 default-run = "konego"
 
+[lib]
+name = "nego"
+path = "src/lib.rs"
 
 [[bin]]
-name = "nego"
-path = "src/nego.rs"
+name = "demo"
+path = "bin/demo.rs"
+
 
 [[bin]]
 name = "konego"
-path = "src/konego.rs"
+path = "bin/konego.rs"
 
 [[bin]]
 name = "gen_move_tab"
-path = "src/gen_move_tab.rs"
+path = "bin/gen_move_tab.rs"
 
 [profile.release]
 debug = true
@@ -30,3 +34,6 @@ minimax = "0.5.3"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
 rustyline = "13.0.0"
+
+[dev-dependencies]
+insta = "1.34.0"

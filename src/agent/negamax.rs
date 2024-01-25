@@ -3,7 +3,7 @@ use crate::{
     core::game::{Color, State},
 };
 
-use minimax::{Game, Strategy};
+use minimax::{Game, IterativeOptions, ParallelOptions, ParallelSearch, Strategy};
 
 #[derive(Clone)]
 struct Eval;
@@ -25,11 +25,14 @@ impl minimax::Evaluator for Eval {
     }
 }
 
+fn iterative_opts() -> IterativeOptions {
+    IterativeOptions::new()
+        .with_table_byte_size(64_000)
+        .verbose()
+}
+
 pub fn step_parallel(state: &State, timeout: std::time::Duration) -> Option<State> {
-    use minimax::{IterativeOptions, ParallelOptions, ParallelSearch};
-    let opts = IterativeOptions::new().with_table_byte_size(64_000_000);
-    let mut strategy = ParallelSearch::new(Eval, opts.verbose(), ParallelOptions::new());
-    strategy.set_max_depth(12);
+    let mut strategy = ParallelSearch::new(Eval, iterative_opts(), ParallelOptions::new());
     strategy.set_timeout(timeout);
 
     let mut new_state = state.clone();
@@ -51,8 +54,7 @@ pub fn step_negamax(state: &State) -> Option<State> {
 }
 
 pub fn step_iterative(state: &State, timeout: std::time::Duration) -> Option<State> {
-    let mut strategy =
-        minimax::IterativeSearch::new(Eval, minimax::IterativeOptions::new().verbose());
+    let mut strategy = minimax::IterativeSearch::new(Eval, iterative_opts());
     strategy.set_timeout(timeout);
 
     let mut new_state = state.clone();

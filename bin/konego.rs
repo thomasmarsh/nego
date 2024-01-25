@@ -1,12 +1,8 @@
-mod agent;
-mod core;
-mod ui;
-
 use comfy::*;
 
-use core::{game, r#move, ray::Rays};
-use game::Color::*;
-use ui::{draw, piece};
+use nego::core::game::Color::*;
+use nego::core::{game, r#move, ray::Rays};
+use nego::ui::{draw, piece};
 
 #[derive(Debug)]
 pub struct MyGame {
@@ -97,7 +93,7 @@ impl GameLoop for MyGame {
 
 #[inline]
 fn draw_one(piece: &r#move::Move, color: game::Color) {
-    use core::pieces::PieceTypeId::*;
+    use nego::core::pieces::PieceTypeId::*;
     let pos = piece.position().get_coord();
     let (x, y) = (pos.0 as u8, pos.1 as u8);
     let dir = piece.orientation();
@@ -124,17 +120,15 @@ fn set_work_state(thread_state: &Arc<Mutex<ThreadData>>, state: WorkerState) {
     lock.worker_state = state;
 }
 
-impl game::PlayerState {
-    #[inline]
-    fn draw(&self, color: game::Color) {
-        self.move_list.iter().for_each(|m| draw_one(m, color));
-    }
+#[inline]
+fn draw_player(state: &game::PlayerState, color: game::Color) {
+    state.move_list.iter().for_each(|m| draw_one(m, color));
 }
 
 impl MyGame {
     fn draw(&self) {
-        self.state.board.black.draw(Black);
-        self.state.board.white.draw(White);
+        draw_player(&self.state.board.black, Black);
+        draw_player(&self.state.board.white, White);
     }
 
     fn spawn_worker(&mut self) {
@@ -144,12 +138,12 @@ impl MyGame {
         let thread_state = self.thread_state.clone();
 
         _ = std::thread::spawn(move || {
-            use agent::AIPlayer::*;
+            use nego::agent::AIPlayer::*;
 
-            let timeout = std::time::Duration::from_secs(1);
+            let timeout = std::time::Duration::from_secs(60);
             let new_state_opt = match work.current {
-                Black => Iterative.step(&work, timeout),
-                White => Parallel.step(&work, timeout),
+                Black => Parallel.step(&work, timeout),
+                White => Random.step(&work, timeout),
             };
 
             if let Some(new_state) = new_state_opt {

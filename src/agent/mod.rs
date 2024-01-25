@@ -3,6 +3,7 @@ mod negamax;
 
 use crate::core::{
     game::{Color, State},
+    pieces::PieceTypeId,
     r#move::Move,
 };
 
@@ -13,6 +14,7 @@ pub enum AIPlayer {
     Parallel,
     Iterative,
     Mcts,
+    Random,
 }
 
 impl AIPlayer {
@@ -25,6 +27,7 @@ impl AIPlayer {
             AIPlayer::Parallel => negamax::step_parallel(state, timeout),
             AIPlayer::Iterative => negamax::step_iterative(state, timeout),
             AIPlayer::Mcts => mcts::step(state, timeout),
+            AIPlayer::Random => step_random(state),
         }
     }
 }
@@ -73,6 +76,15 @@ impl minimax::Game for Nego {
 
     fn notation(_: &State, m: Move) -> Option<String> {
         Some(m.notation())
+    }
+
+    fn table_index(m: Self::M) -> u16 {
+        m.get_raw_value()
+    }
+
+    fn max_table_index() -> u16 {
+        let p = PieceTypeId::Kunoji4.def();
+        ((p.lut_offset + p.moves) * 2) as u16
     }
 }
 
