@@ -1,6 +1,5 @@
 ---
 source: tests/game.rs
-assertion_line: 73
 expression: history
 ---
 [
