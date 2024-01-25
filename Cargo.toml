@@ -2,7 +2,7 @@
 name = "nego"
 version = "0.1.0"
 edition = "2021"
-default-run = "nego"
+default-run = "konego"
 
 
 [[bin]]
