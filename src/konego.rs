@@ -1,4 +1,4 @@
-mod ai;
+mod agent;
 mod core;
 mod ui;
 
@@ -11,7 +11,21 @@ use ui::{draw, piece};
 #[derive(Debug)]
 pub struct MyGame {
     pub state: game::State,
+    pub ui: UIState,
     pub thread_state: Arc<Mutex<ThreadData>>,
+}
+
+#[derive(Debug)]
+pub struct UIState {
+    show_spinner: bool,
+}
+
+impl UIState {
+    fn new() -> Self {
+        Self {
+            show_spinner: false,
+        }
+    }
 }
 
 #[repr(u8)]
@@ -43,6 +57,7 @@ impl GameLoop for MyGame {
         Rays::build_lut();
         Self {
             state: game::State::new(),
+            ui: UIState::new(),
             thread_state: Arc::new(Mutex::new(ThreadData::new())),
         }
     }
@@ -51,6 +66,32 @@ impl GameLoop for MyGame {
         self.update_state();
         draw::board();
         self.draw();
+
+        let square_size = 80;
+        let Vec2 { x: mx, y: my } = mouse_screen();
+        let index = |n: f32| ((n + 40.) / square_size as f32).floor() as i32;
+        let (ix, iy) = (index(mx) - 1, index(my) - 1);
+        if (0..8).contains(&ix) && (0..8).contains(&iy) {
+            let snap = |n: f32| (index(n) * square_size) as f32;
+            let snapped_pos = Vec2::new(snap(mx), snap(my));
+            draw_rect(
+                screen_to_world(snapped_pos),
+                screen_to_world(Vec2::new(
+                    screen_width() / 2.0 + square_size as f32,
+                    screen_height() / 2.0 + square_size as f32,
+                )),
+                Color::rgba8(0x10, 0xff, 0x11, 0x88),
+                1,
+            );
+        }
+
+        egui::SidePanel::right("my_right_panel")
+            .default_width(50.)
+            .show(egui(), |ui| {
+                if self.ui.show_spinner {
+                    ui.add(egui::Spinner::new());
+                }
+            });
     }
 }
 
@@ -103,9 +144,12 @@ impl MyGame {
         let thread_state = self.thread_state.clone();
 
         _ = std::thread::spawn(move || {
+            use agent::AIPlayer::*;
+
+            let timeout = std::time::Duration::from_secs(1);
             let new_state_opt = match work.current {
-                Black => ai::step_mcts(&work),
-                White => ai::step_iterative(&work),
+                Black => Iterative.step(&work, timeout),
+                White => Parallel.step(&work, timeout),
             };
 
             if let Some(new_state) = new_state_opt {
@@ -113,6 +157,9 @@ impl MyGame {
                 lock.worker_state = WorkerState::Ready;
                 lock.new_state = new_state;
             } else {
+                println!("Score:");
+                println!("- black: {}", work.board.black.occupied.popcnt());
+                println!("- white: {}", work.board.white.occupied.popcnt());
                 set_work_state(&thread_state, WorkerState::Done);
             }
         });
@@ -132,6 +179,7 @@ impl MyGame {
             let lock = self.thread_state.lock();
             lock.worker_state
         };
+        self.ui.show_spinner = state == WorkerState::Working;
         match state {
             WorkerState::Idle => self.spawn_worker(),
             WorkerState::Working => (),

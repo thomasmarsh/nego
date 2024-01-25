@@ -1,4 +1,4 @@
-mod ai;
+mod agent;
 mod core;
 
 #[macro_use]
@@ -10,6 +10,6 @@ fn main() -> rustyline::Result<()> {
     info!("initializing ray LUT");
     core::ray::Rays::build_lut();
 
-    ai::demo_minimax();
+    agent::demo_minimax();
     Ok(())
 }
