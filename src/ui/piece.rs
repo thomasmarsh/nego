@@ -283,7 +283,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn preserve_origin() {
+    fn rotate_correctly() {
         use Orientation::*;
         let c = Color::Black;
         for (label, piece) in [
@@ -298,11 +298,21 @@ mod tests {
             ("kunoji3", mk_kunoji3(c)),
             ("kunoji4", mk_kunoji4(c)),
         ] {
+            let (w, h) = piece.bounds();
             for y in 0..8 {
                 for x in 0..8 {
                     for dir in [S, W, N, E] {
                         println!("{} at ({}, {}) {:?}", label, x, y, dir);
-                        assert_eq!(piece.translate(x, y).facing(dir).offset, (x as _, y as _))
+                        let placed = piece.translate(x, y).facing(dir);
+                        assert_eq!(placed.offset, (x as _, y as _));
+
+                        let expected_bounds = match dir {
+                            S | N => (w, h),
+                            E | W => (h, w),
+                        };
+                        assert_eq!(placed.bounds(), expected_bounds);
+
+                        assert_eq!(placed.facing, dir);
                     }
                 }
             }
