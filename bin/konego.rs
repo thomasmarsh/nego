@@ -143,7 +143,7 @@ impl MyGame {
             let timeout = std::time::Duration::from_secs(60);
             let new_state_opt = match work.current {
                 Black => Parallel.step(&work, timeout),
-                White => Random.step(&work, timeout),
+                White => Iterative.step(&work, timeout),
             };
 
             if let Some(new_state) = new_state_opt {

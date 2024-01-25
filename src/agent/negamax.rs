@@ -3,7 +3,9 @@ use crate::{
     core::game::{Color, State},
 };
 
-use minimax::{Game, IterativeOptions, ParallelOptions, ParallelSearch, Strategy};
+use minimax::{Game, IterativeOptions, IterativeSearch, ParallelOptions, ParallelSearch, Strategy};
+
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 #[derive(Clone)]
 struct Eval;
@@ -28,37 +30,61 @@ impl minimax::Evaluator for Eval {
 fn iterative_opts() -> IterativeOptions {
     IterativeOptions::new()
         .with_table_byte_size(64_000)
+        .with_mtdf()
+        .with_singular_extension()
+        // TODO: adding countermoves triggers a panic.
+        //
+        // Message:  index out of bounds: the len is 1725 but the index is 1889
+        // Location: /Users/tmarsh/.cargo/registry/src/index.crates.io-6f17d22bba15001f/minimax-0.5.3/src/strategies/table.rs:407
+        //
+        // .with_countermoves()
+        // .with_countermove_history()
         .verbose()
 }
 
-pub fn step_parallel(state: &State, timeout: std::time::Duration) -> Option<State> {
-    let mut strategy = ParallelSearch::new(Eval, iterative_opts(), ParallelOptions::new());
+fn parallel_opts() -> ParallelOptions {
+    ParallelOptions::new()
+}
+
+static PARALLEL_CELL: OnceLock<Mutex<ParallelSearch<Eval>>> = OnceLock::new();
+static ITERATIVE_CELL: OnceLock<Mutex<IterativeSearch<Eval>>> = OnceLock::new();
+
+fn get_parallel_agent() -> MutexGuard<'static, ParallelSearch<Eval>> {
+    PARALLEL_CELL
+        .get_or_init(|| Mutex::new(ParallelSearch::new(Eval, iterative_opts(), parallel_opts())))
+        .lock()
+        .unwrap()
+}
+
+fn get_iterative_agent() -> MutexGuard<'static, IterativeSearch<Eval>> {
+    ITERATIVE_CELL
+        .get_or_init(|| Mutex::new(IterativeSearch::new(Eval, iterative_opts())))
+        .lock()
+        .unwrap()
+}
+
+pub fn step<S>(
+    state: &State,
+    timeout: std::time::Duration,
+    strategy: &mut MutexGuard<'static, S>,
+) -> Option<State>
+where
+    S: Strategy<Nego>,
+{
     strategy.set_timeout(timeout);
 
     let mut new_state = state.clone();
     strategy
         .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m))
-}
+        .and_then(|m| Nego::apply(&mut new_state, m));
 
-pub fn step_negamax(state: &State) -> Option<State> {
-    let mut strategy = minimax::Negamax::new(Eval, 4);
-    if Nego::get_winner(state).is_some() {
-        return None;
-    }
-
-    let mut new_state = state.clone();
-    strategy
-        .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m))
+    Some(new_state)
 }
 
 pub fn step_iterative(state: &State, timeout: std::time::Duration) -> Option<State> {
-    let mut strategy = minimax::IterativeSearch::new(Eval, iterative_opts());
-    strategy.set_timeout(timeout);
+    step(state, timeout, &mut get_iterative_agent())
+}
 
-    let mut new_state = state.clone();
-    strategy
-        .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m))
+pub fn step_parallel(state: &State, timeout: std::time::Duration) -> Option<State> {
+    step(state, timeout, &mut get_parallel_agent())
 }

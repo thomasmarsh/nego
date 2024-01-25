@@ -39,5 +39,7 @@ pub fn step(state: &State, timeout: std::time::Duration) -> Option<State> {
     let mut new_state = state.clone();
     strategy
         .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m))
+        .and_then(|m| Nego::apply(&mut new_state, m));
+
+    Some(new_state)
 }

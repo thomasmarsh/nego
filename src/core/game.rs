@@ -380,6 +380,13 @@ impl State {
     }
 
     #[inline]
+    pub fn apply(&mut self, m: Move) {
+        self.place(m);
+        self.update_hash(m);
+        self.current = self.current.next();
+    }
+
+    #[inline]
     pub fn place(&mut self, m: Move) {
         self.capture_flag = self.board.place(self.current, m);
     }

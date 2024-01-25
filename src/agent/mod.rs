@@ -1,5 +1,5 @@
-mod mcts;
-mod negamax;
+pub mod mcts;
+pub mod negamax;
 
 use crate::core::{
     game::{Color, State},
@@ -61,12 +61,9 @@ impl minimax::Game for Nego {
     }
 
     #[inline]
-    fn apply(s: &mut State, m: Move) -> Option<State> {
-        let mut state = s.clone();
-        state.place(m);
-        state.current = state.current.next();
-        state.update_hash(m);
-        Some(state)
+    fn apply(state: &mut State, m: Move) -> Option<State> {
+        state.apply(m);
+        None
     }
 
     #[inline]
@@ -84,12 +81,11 @@ impl minimax::Game for Nego {
 
     fn max_table_index() -> u16 {
         let p = PieceTypeId::Kunoji4.def();
-        ((p.lut_offset + p.moves) * 2) as u16
+        (p.lut_offset + p.moves) as u16
     }
 }
 
-#[allow(unused)]
-fn step_random(state: &State) -> Option<State> {
+pub fn step_random(state: &State) -> Option<State> {
     use rand::Rng;
     let mut rng = rand::thread_rng();
 
@@ -100,48 +96,6 @@ fn step_random(state: &State) -> Option<State> {
     }
     let idx: usize = rng.gen_range(0..ms.len());
     let mut new_state = state.clone();
-    new_state.place(ms[idx]);
-    new_state.current = new_state.current.next();
-
-    new_state.board.print_color_map();
+    new_state.apply(ms[idx]);
     Some(new_state)
-}
-
-#[allow(unused)]
-pub fn demo_rnd() {
-    let mut state = State::new();
-
-    loop {
-        if let Some(new_state) = step_random(&state) {
-            state = new_state;
-        }
-    }
-}
-
-#[allow(unused)]
-pub fn demo_minimax() {
-    let mut state = State::new();
-    let mut s = 0;
-    loop {
-        state.dump();
-        let new_state_opt = if s == 0 {
-            step_random(&state)
-        } else {
-            negamax::step_iterative(&state, std::time::Duration::from_secs(5))
-        };
-        s = 1 - s;
-
-        if let Some(new_state) = new_state_opt {
-            state = new_state;
-        } else {
-            break;
-        }
-    }
-    println!(
-        "Winner: {:?} (b={}, w={})",
-        Nego::get_winner(&state),
-        state.board.black.points(),
-        state.board.white.points()
-    );
-    state.dump();
 }

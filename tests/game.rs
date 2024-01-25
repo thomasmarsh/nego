@@ -54,21 +54,22 @@ fn no_capture_boss() {
 fn snapshot() {
     use rand::{seq::SliceRandom, SeedableRng};
     let mut rng = rand::rngs::StdRng::seed_from_u64(123);
-    let mut state = State::new();
-    let mut moves = Vec::new();
-    let mut history = Vec::new();
-    loop {
-        history.push(state.clone());
-        moves.truncate(0);
-        state.get_moves(&mut moves);
-        if moves.is_empty() {
-            break;
-        }
-        let m = *moves.choose(&mut rng).unwrap();
-        state.place(m);
-        state.current = state.current.next();
-        state.update_hash(m);
-    }
 
-    insta::assert_debug_snapshot!(history);
+    for _ in 0..20 {
+        let mut state = State::new();
+        let mut moves = Vec::new();
+        let mut history = Vec::new();
+        loop {
+            history.push(state.clone());
+            moves.truncate(0);
+            state.get_moves(&mut moves);
+            if moves.is_empty() {
+                break;
+            }
+            let m = *moves.choose(&mut rng).unwrap();
+            state.apply(m);
+        }
+
+        insta::assert_debug_snapshot!(history);
+    }
 }

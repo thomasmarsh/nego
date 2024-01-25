@@ -60,11 +60,11 @@ expression: history
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101250810609664,
+                    847723465015296,
                 ),
                 owned: BitBoard(
                     0,
@@ -83,7 +83,7 @@ expression: history
                 ),
             },
             boss: BitBoard(
-                13889101250810609664,
+                847723465015296,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -100,7 +100,7 @@ expression: history
                 ),
             },
         },
-        hash: 12101790301205412633,
+        hash: 18223537927370505983,
         capture_flag: false,
     },
     State {
@@ -112,11 +112,11 @@ expression: history
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101250810609664,
+                    847723465015296,
                 ),
                 owned: BitBoard(
                     0,
@@ -128,18 +128,18 @@ expression: history
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                 ],
                 occupied: BitBoard(
-                    197376,
+                    202113024,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -156,7 +156,7 @@ expression: history
                 ),
             },
         },
-        hash: 1990609415450799585,
+        hash: 2574906838960643479,
         capture_flag: false,
     },
     State {
@@ -164,18 +164,18 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3582,
+                    4062,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101457505910784,
+                    847723465015553,
                 ),
                 owned: BitBoard(
                     0,
@@ -187,18 +187,18 @@ expression: history
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                 ],
                 occupied: BitBoard(
-                    197376,
+                    202113024,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -215,7 +215,7 @@ expression: history
                 ),
             },
         },
-        hash: 10326225080988717298,
+        hash: 12185048888884217041,
         capture_flag: false,
     },
     State {
@@ -223,18 +223,18 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3582,
+                    4062,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101457505910784,
+                    847723465015553,
                 ),
                 owned: BitBoard(
                     0,
@@ -242,25 +242,25 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    4092,
+                    4078,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                 ],
                 occupied: BitBoard(
-                    72057594038125312,
+                    1729382257112383488,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -277,7 +277,7 @@ expression: history
                 ),
             },
         },
-        hash: 2653757946338946771,
+        hash: 2068451689321275075,
         capture_flag: false,
     },
     State {
@@ -285,21 +285,21 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3580,
+                    4058,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101457505910792,
+                    1111606255681793,
                 ),
                 owned: BitBoard(
                     0,
@@ -307,25 +307,25 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    4092,
+                    4078,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                 ],
                 occupied: BitBoard(
-                    72057594038125312,
+                    1729382257112383488,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -342,7 +342,7 @@ expression: history
                 ),
             },
         },
-        hash: 14564106539557281614,
+        hash: 14079133647892602618,
         capture_flag: false,
     },
     State {
@@ -350,21 +350,21 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3580,
+                    4058,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                 ],
                 occupied: BitBoard(
-                    13889101457505910792,
+                    1111606255681793,
                 ),
                 owned: BitBoard(
                     0,
@@ -372,28 +372,28 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    2044,
+                    4070,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207044113152,
+                    1742893055994494976,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -410,7 +410,7 @@ expression: history
                 ),
             },
         },
-        hash: 6693634700041227184,
+        hash: 11067916579541224985,
         capture_flag: false,
     },
     State {
@@ -418,24 +418,24 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3564,
+                    3994,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046526561740128264,
+                    1111606255681841,
                 ),
                 owned: BitBoard(
                     0,
@@ -443,28 +443,28 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    2044,
+                    4070,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207044113152,
+                    1742893055994494976,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -481,7 +481,7 @@ expression: history
                 ),
             },
         },
-        hash: 6362916418011619058,
+        hash: 14780033912554836451,
         capture_flag: false,
     },
     State {
@@ -489,24 +489,24 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3564,
+                    3994,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046526561740128264,
+                    1111606255681841,
                 ),
                 owned: BitBoard(
                     0,
@@ -514,31 +514,31 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    2040,
+                    4068,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207313601296,
+                    1760907454503976960,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -555,7 +555,7 @@ expression: history
                 ),
             },
         },
-        hash: 7748703333781413631,
+        hash: 17674681602767940304,
         capture_flag: false,
     },
     State {
@@ -563,27 +563,27 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3436,
+                    3986,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046526579121324040,
+                    1111606794649905,
                 ),
                 owned: BitBoard(
                     0,
@@ -591,31 +591,31 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    2040,
+                    4068,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207313601296,
+                    1760907454503976960,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -632,7 +632,7 @@ expression: history
                 ),
             },
         },
-        hash: 12369765723328632860,
+        hash: 4973095491479789294,
         capture_flag: false,
     },
     State {
@@ -640,27 +640,27 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    3436,
+                    3986,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046526579121324040,
+                    1111606794649905,
                 ),
                 owned: BitBoard(
                     0,
@@ -668,34 +668,34 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    1528,
+                    4036,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207319909136,
+                    1760907454504108544,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -712,7 +712,7 @@ expression: history
                 ),
             },
         },
-        hash: 622656854737202923,
+        hash: 14927581880716847116,
         capture_flag: false,
     },
     State {
@@ -720,30 +720,30 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1388,
+                    2962,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046737960231763976,
+                    1111610020069681,
                 ),
                 owned: BitBoard(
                     0,
@@ -751,34 +751,34 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    1528,
+                    4036,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017207319909136,
+                    1760907454504108544,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -795,7 +795,7 @@ expression: history
                 ),
             },
         },
-        hash: 2573610149424367814,
+        hash: 9250638666471944529,
         capture_flag: false,
     },
     State {
@@ -803,30 +803,30 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1388,
+                    2962,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                 ],
                 occupied: BitBoard(
-                    15046737960231763976,
+                    1111610020069681,
                 ),
                 owned: BitBoard(
                     0,
@@ -834,37 +834,37 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    1496,
+                    1988,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017215943398160,
+                    2052515530376348160,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -881,7 +881,7 @@ expression: history
                 ),
             },
         },
-        hash: 4680217771381551826,
+        hash: 3565811722731070416,
         capture_flag: false,
     },
     State {
@@ -889,33 +889,33 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1380,
+                    914,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050115659952291848,
+                    1111610070466865,
                 ),
                 owned: BitBoard(
                     0,
@@ -923,37 +923,37 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    1496,
+                    1988,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017215943398160,
+                    2052515530376348160,
                 ),
                 owned: BitBoard(
                     0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -970,7 +970,7 @@ expression: history
                 ),
             },
         },
-        hash: 8240912638703232566,
+        hash: 3228379916114434983,
         capture_flag: false,
     },
     State {
@@ -978,33 +978,33 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1380,
+                    914,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050115659952291848,
+                    1111610070466865,
                 ),
                 owned: BitBoard(
                     0,
@@ -1012,40 +1012,40 @@ expression: history
             },
             white: PlayerState {
                 hand: PieceList(
-                    1432,
+                    1924,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099270416,
+                    2052515530376397312,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1062,7 +1062,7 @@ expression: history
                 ),
             },
         },
-        hash: 2648651983478186538,
+        hash: 11724331851824179430,
         capture_flag: false,
     },
     State {
@@ -1070,77 +1070,77 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1348,
+                    912,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                     Move(
-                        15701,
+                        1825,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050142048231358472,
+                    1111610070470961,
                 ),
                 owned: BitBoard(
-                    17365027423690686464,
+                    0,
                 ),
             },
             white: PlayerState {
                 hand: PieceList(
-                    1432,
+                    1924,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099270416,
+                    2052515530376397312,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1157,7 +1157,7 @@ expression: history
                 ),
             },
         },
-        hash: 12951669404893380373,
+        hash: 1952845940186488714,
         capture_flag: false,
     },
     State {
@@ -1165,80 +1165,80 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1348,
+                    912,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                     Move(
-                        15701,
+                        1825,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050142048231358472,
+                    1111610070470961,
                 ),
                 owned: BitBoard(
-                    17365027423690686464,
+                    0,
                 ),
             },
             white: PlayerState {
                 hand: PieceList(
-                    1304,
+                    1796,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                     Move(
-                        18039,
+                        17655,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099278704,
+                    2052528741695799808,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1255,7 +1255,7 @@ expression: history
                 ),
             },
         },
-        hash: 6483715011566743569,
+        hash: 5397454085930287579,
         capture_flag: false,
     },
     State {
@@ -1263,83 +1263,83 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1284,
+                    400,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                     Move(
-                        15701,
+                        1825,
                     ),
                     Move(
-                        14438,
+                        21001,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050142048231621640,
+                    1111816497336625,
                 ),
                 owned: BitBoard(
-                    17365027423690686464,
+                    264917615640576,
                 ),
             },
             white: PlayerState {
                 hand: PieceList(
-                    1304,
+                    1796,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                     Move(
-                        18039,
+                        17655,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099278704,
+                    2052528741695799808,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    0,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1356,7 +1356,7 @@ expression: history
                 ),
             },
         },
-        hash: 4167444323985562402,
+        hash: 18302307117414639530,
         capture_flag: false,
     },
     State {
@@ -1364,86 +1364,86 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    1284,
+                    400,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                     Move(
-                        15701,
+                        1825,
                     ),
                     Move(
-                        14438,
+                        21001,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050142048231621640,
+                    1111816497336625,
                 ),
                 owned: BitBoard(
-                    17365027423690686464,
+                    264917615640576,
                 ),
             },
             white: PlayerState {
                 hand: PieceList(
-                    1288,
+                    772,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                     Move(
-                        18039,
+                        17655,
                     ),
                     Move(
-                        10612,
+                        22874,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099311600,
+                    15923615593996927488,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    18229458603210572288,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1460,7 +1460,7 @@ expression: history
                 ),
             },
         },
-        hash: 7408390573835072643,
+        hash: 7013817543796471933,
         capture_flag: false,
     },
     State {
@@ -1468,89 +1468,89 @@ expression: history
         board: Board {
             black: PlayerState {
                 hand: PieceList(
-                    260,
+                    272,
                 ),
                 move_list: [
                     Move(
-                        752,
+                        544,
                     ),
                     Move(
-                        20265,
+                        12869,
                     ),
                     Move(
-                        3505,
+                        5858,
                     ),
                     Move(
-                        12820,
+                        15238,
                     ),
                     Move(
-                        18279,
+                        9251,
                     ),
                     Move(
-                        27355,
+                        23210,
                     ),
                     Move(
-                        7299,
+                        27035,
                     ),
                     Move(
-                        15701,
+                        1825,
                     ),
                     Move(
-                        14438,
+                        21001,
                     ),
                     Move(
-                        23338,
+                        15975,
                     ),
                 ],
                 occupied: BitBoard(
-                    15050145351061472264,
+                    1111816497338685,
                 ),
                 owned: BitBoard(
-                    17365027423690686464,
+                    264917615640576,
                 ),
             },
             white: PlayerState {
                 hand: PieceList(
-                    1288,
+                    772,
                 ),
                 move_list: [
                     Move(
-                        112,
+                        256,
                     ),
                     Move(
-                        4241,
+                        12020,
                     ),
                     Move(
-                        25915,
+                        7331,
                     ),
                     Move(
-                        4962,
+                        3297,
                     ),
                     Move(
-                        20057,
+                        14421,
                     ),
                     Move(
-                        14677,
+                        25163,
                     ),
                     Move(
-                        14646,
+                        13814,
                     ),
                     Move(
-                        18039,
+                        17655,
                     ),
                     Move(
-                        10612,
+                        22874,
                     ),
                 ],
                 occupied: BitBoard(
-                    217017218099311600,
+                    15923615593996927488,
                 ),
                 owned: BitBoard(
-                    2431709424,
+                    18229458603210572288,
                 ),
             },
             boss: BitBoard(
-                13889101250810807040,
+                847723667128320,
             ),
             rays: Rays {
                 s: BitBoard(
@@ -1567,117 +1567,7 @@ expression: history
                 ),
             },
         },
-        hash: 6646832062985868069,
-        capture_flag: false,
-    },
-    State {
-        current: Black,
-        board: Board {
-            black: PlayerState {
-                hand: PieceList(
-                    260,
-                ),
-                move_list: [
-                    Move(
-                        752,
-                    ),
-                    Move(
-                        20265,
-                    ),
-                    Move(
-                        3505,
-                    ),
-                    Move(
-                        12820,
-                    ),
-                    Move(
-                        18279,
-                    ),
-                    Move(
-                        27355,
-                    ),
-                    Move(
-                        7299,
-                    ),
-                    Move(
-                        15701,
-                    ),
-                    Move(
-                        14438,
-                    ),
-                    Move(
-                        23338,
-                    ),
-                ],
-                occupied: BitBoard(
-                    15050145351061472264,
-                ),
-                owned: BitBoard(
-                    17365027423690686464,
-                ),
-            },
-            white: PlayerState {
-                hand: PieceList(
-                    1280,
-                ),
-                move_list: [
-                    Move(
-                        112,
-                    ),
-                    Move(
-                        4241,
-                    ),
-                    Move(
-                        25915,
-                    ),
-                    Move(
-                        4962,
-                    ),
-                    Move(
-                        20057,
-                    ),
-                    Move(
-                        14677,
-                    ),
-                    Move(
-                        14646,
-                    ),
-                    Move(
-                        18039,
-                    ),
-                    Move(
-                        10612,
-                    ),
-                    Move(
-                        6595,
-                    ),
-                ],
-                occupied: BitBoard(
-                    217017218099311603,
-                ),
-                owned: BitBoard(
-                    2431709424,
-                ),
-            },
-            boss: BitBoard(
-                13889101250810807040,
-            ),
-            rays: Rays {
-                s: BitBoard(
-                    0,
-                ),
-                w: BitBoard(
-                    0,
-                ),
-                n: BitBoard(
-                    0,
-                ),
-                e: BitBoard(
-                    0,
-                ),
-            },
-        },
-        hash: 6941346682903710506,
+        hash: 17644215520126936561,
         capture_flag: false,
     },
 ]
