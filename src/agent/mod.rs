@@ -9,25 +9,35 @@ use crate::core::{
 
 use minimax::Game;
 
-#[derive(Copy, Clone)]
-pub enum AIPlayer {
-    Parallel,
-    Iterative,
-    Mcts,
+#[derive(Copy, Clone, Debug)]
+pub enum Agent {
+    Parallel(std::time::Duration),
+    Iterative(std::time::Duration),
+    Mcts(std::time::Duration),
     Random,
+    Human,
 }
 
-impl AIPlayer {
-    pub fn step(&self, state: &State, timeout: std::time::Duration) -> Option<State> {
+impl Agent {
+    pub fn is_human(&self) -> bool {
+        #[allow(clippy::match_like_matches_macro)]
+        match self {
+            Agent::Human => true,
+            _ => false,
+        }
+    }
+
+    pub fn step(&self, state: &State) -> Option<State> {
         if Nego::get_winner(state).is_some() {
             return None;
         }
 
         match self {
-            AIPlayer::Parallel => negamax::step_parallel(state, timeout),
-            AIPlayer::Iterative => negamax::step_iterative(state, timeout),
-            AIPlayer::Mcts => mcts::step(state, timeout),
-            AIPlayer::Random => step_random(state),
+            Agent::Parallel(timeout) => negamax::step_parallel(state, *timeout),
+            Agent::Iterative(timeout) => negamax::step_iterative(state, *timeout),
+            Agent::Mcts(timeout) => mcts::step(state, *timeout),
+            Agent::Random => step_random(state),
+            Agent::Human => None,
         }
     }
 }
@@ -48,8 +58,11 @@ impl minimax::Game for Nego {
         if state.has_moves() {
             return None;
         }
-        let b = state.board.black.points();
-        let w = state.board.white.points();
+
+        // We use 0.5 komi to prevent draws
+        let komi = 1;
+        let b = state.board.black.occupied.popcnt() * 2;
+        let w = state.board.white.occupied.popcnt() * 2 + komi;
 
         if b == w {
             Some(minimax::Winner::Draw)

@@ -1,25 +1,67 @@
 use comfy::*;
 
-use nego::core::game::Color::*;
-use nego::core::{game, r#move, ray::Rays};
-use nego::ui::{draw, piece};
+use nego::{
+    agent::Agent,
+    core::{
+        game::{self, Color::*},
+        ray::Rays,
+    },
+    ui::{draw, piece},
+};
+
+#[derive(Clone, Debug)]
+pub struct ThreadState(Arc<Mutex<ThreadData>>);
+
+impl ThreadState {
+    fn new() -> Self {
+        Self(Arc::new(Mutex::new(ThreadData::new())))
+    }
+
+    fn get(&self) -> WorkerState {
+        self.0.lock().worker_state
+    }
+
+    fn set_ready(&self, state: game::State) {
+        let mut lock = self.0.lock();
+        lock.worker_state = WorkerState::Ready;
+        lock.new_state = state;
+    }
+
+    fn set_working(&self) {
+        self.0.lock().worker_state = WorkerState::Working;
+    }
+
+    fn set_done(&self) {
+        self.0.lock().worker_state = WorkerState::Done;
+    }
+
+    fn set_and_fetch(&self, worker_state: WorkerState) -> game::State {
+        let mut lock = self.0.lock();
+        lock.worker_state = worker_state;
+        lock.new_state.clone()
+    }
+}
 
 #[derive(Debug)]
 pub struct MyGame {
     pub state: game::State,
     pub ui: UIState,
-    pub thread_state: Arc<Mutex<ThreadData>>,
+    pub thread_state: ThreadState,
 }
 
 #[derive(Debug)]
 pub struct UIState {
     show_spinner: bool,
+    agent_black: Agent,
+    agent_white: Agent,
 }
 
 impl UIState {
     fn new() -> Self {
         Self {
             show_spinner: false,
+            agent_black: Agent::Iterative(std::time::Duration::from_secs(5)),
+            agent_white: Agent::Parallel(std::time::Duration::from_secs(5)),
         }
     }
 }
@@ -54,15 +96,92 @@ impl GameLoop for MyGame {
         Self {
             state: game::State::new(),
             ui: UIState::new(),
-            thread_state: Arc::new(Mutex::new(ThreadData::new())),
+            thread_state: ThreadState::new(),
         }
     }
 
     fn update(&mut self, _c: &mut EngineContext) {
         self.update_state();
-        draw::board();
         self.draw();
+        self.user_input();
+    }
+}
 
+#[inline]
+fn draw_player(state: &game::PlayerState, color: game::Color) {
+    state
+        .move_list
+        .iter()
+        .for_each(|m| piece::Parts::new(m.get_piece().piece_type_id()).draw(color, *m));
+}
+
+impl MyGame {
+    fn draw(&self) {
+        draw::board();
+        draw_player(&self.state.board.black, Black);
+        draw_player(&self.state.board.white, White);
+        self.right_panel();
+    }
+
+    fn right_panel(&self) {
+        egui::SidePanel::right("my_right_panel")
+            .default_width(50.)
+            .show(egui(), |ui| {
+                if self.ui.show_spinner {
+                    ui.add(egui::Spinner::new());
+                }
+            });
+    }
+
+    fn current_agent(&self) -> Agent {
+        match self.state.current {
+            Black => self.ui.agent_black,
+            White => self.ui.agent_white,
+        }
+    }
+
+    fn spawn_worker(&mut self) {
+        self.thread_state.set_working();
+
+        let work = self.state.clone();
+        let agent = self.current_agent();
+
+        let thread_state = self.thread_state.clone();
+
+        _ = std::thread::spawn(move || {
+            if let Some(state) = agent.step(&work) {
+                thread_state.set_ready(state);
+            } else {
+                println!("Score:");
+                println!("- black: {}", work.board.black.occupied.popcnt());
+                println!("- white: {}", work.board.white.occupied.popcnt());
+                thread_state.set_done();
+            }
+        });
+    }
+
+    fn finalize_work(&mut self) {
+        self.state = self.thread_state.set_and_fetch(WorkerState::Idle);
+        self.state.dump();
+    }
+
+    fn update_state(&mut self) {
+        if !self.current_agent().is_human() {
+            let state = self.thread_state.get();
+            self.ui.show_spinner = state == WorkerState::Working;
+            match state {
+                WorkerState::Idle => self.spawn_worker(),
+                WorkerState::Working => (),
+                WorkerState::Ready => self.finalize_work(),
+                WorkerState::Done => (),
+            }
+        }
+    }
+
+    fn user_input(&self) {
+        if !self.current_agent().is_human() {
+            return;
+        }
         let square_size = 80;
         let Vec2 { x: mx, y: my } = mouse_screen();
         let index = |n: f32| ((n + 40.) / square_size as f32).floor() as i32;
@@ -79,106 +198,6 @@ impl GameLoop for MyGame {
                 Color::rgba8(0x10, 0xff, 0x11, 0x88),
                 1,
             );
-        }
-
-        egui::SidePanel::right("my_right_panel")
-            .default_width(50.)
-            .show(egui(), |ui| {
-                if self.ui.show_spinner {
-                    ui.add(egui::Spinner::new());
-                }
-            });
-    }
-}
-
-#[inline]
-fn draw_one(piece: &r#move::Move, color: game::Color) {
-    use nego::core::pieces::PieceTypeId::*;
-    let pos = piece.position().get_coord();
-    let (x, y) = (pos.0 as u8, pos.1 as u8);
-    let dir = piece.orientation();
-    use piece::*;
-    match piece.get_piece().piece_type_id() {
-        Boss => mk_boss(color),
-        Mame => mk_mame(color),
-        Nobi => mk_nobi(color),
-        Koubaku1 => mk_koubaku1(color),
-        Koubaku2 => mk_koubaku2(color),
-        Koubaku3 => mk_koubaku3(color),
-        Kunoji1 => mk_kunoji1(color),
-        Kunoji2 => mk_kunoji2(color),
-        Kunoji3 => mk_kunoji3(color),
-        Kunoji4 => mk_kunoji4(color),
-    }
-    .translate(x as _, y as _)
-    .facing(dir)
-    .draw();
-}
-
-fn set_work_state(thread_state: &Arc<Mutex<ThreadData>>, state: WorkerState) {
-    let mut lock = thread_state.lock();
-    lock.worker_state = state;
-}
-
-#[inline]
-fn draw_player(state: &game::PlayerState, color: game::Color) {
-    state.move_list.iter().for_each(|m| draw_one(m, color));
-}
-
-impl MyGame {
-    fn draw(&self) {
-        draw_player(&self.state.board.black, Black);
-        draw_player(&self.state.board.white, White);
-    }
-
-    fn spawn_worker(&mut self) {
-        set_work_state(&self.thread_state, WorkerState::Working);
-
-        let work = self.state.clone();
-        let thread_state = self.thread_state.clone();
-
-        _ = std::thread::spawn(move || {
-            use nego::agent::AIPlayer::*;
-
-            let timeout = std::time::Duration::from_secs(60);
-            let new_state_opt = match work.current {
-                Black => Parallel.step(&work, timeout),
-                White => Iterative.step(&work, timeout),
-            };
-
-            if let Some(new_state) = new_state_opt {
-                let mut lock = thread_state.lock();
-                lock.worker_state = WorkerState::Ready;
-                lock.new_state = new_state;
-            } else {
-                println!("Score:");
-                println!("- black: {}", work.board.black.occupied.popcnt());
-                println!("- white: {}", work.board.white.occupied.popcnt());
-                set_work_state(&thread_state, WorkerState::Done);
-            }
-        });
-    }
-
-    fn finalize_work(&mut self) {
-        {
-            let mut lock = self.thread_state.lock();
-            lock.worker_state = WorkerState::Idle;
-            self.state = lock.new_state.clone();
-        }
-        self.state.dump();
-    }
-
-    fn update_state(&mut self) {
-        let state = {
-            let lock = self.thread_state.lock();
-            lock.worker_state
-        };
-        self.ui.show_spinner = state == WorkerState::Working;
-        match state {
-            WorkerState::Idle => self.spawn_worker(),
-            WorkerState::Working => (),
-            WorkerState::Ready => self.finalize_work(),
-            WorkerState::Done => (),
         }
     }
 }

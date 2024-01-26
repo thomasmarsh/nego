@@ -54,7 +54,7 @@ pub fn rect(color: game::Color, x: u8, y: u8, w: u8, h: u8) {
 
 #[inline]
 pub fn circle(color: game::Color, x: u8, y: u8) {
-    //assert!(x < 8 && y < 8);
+    // assert!(x < 8 && y < 8);
     let size = screen_to_world(Vec2::new(screen_width() / 2.0 + CIRCLE_SIZE, 0.)).x;
     draw_circle(
         screen_to_world(Vec2::new(
@@ -69,7 +69,7 @@ pub fn circle(color: game::Color, x: u8, y: u8) {
 
 #[inline]
 pub fn triangle(color: game::Color, x: u8, y: u8, r: f32) {
-    //assert!(x < 8 && y < 8);
+    // assert!(x < 8 && y < 8);
     let size = screen_to_world(Vec2::new(screen_width() / 2.0 + CIRCLE_SIZE, 0.)).x;
     let center = screen_to_world(Vec2::new(
         x as f32 * SQUARE_SIZE + (SQUARE_CENTER - CIRCLE_SIZE) + OFFSET,

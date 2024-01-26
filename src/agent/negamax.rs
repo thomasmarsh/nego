@@ -15,11 +15,11 @@ impl minimax::Evaluator for Eval {
 
     #[inline]
     fn evaluate(&self, state: &State) -> minimax::Evaluation {
-        let b = state.board.black.points() as i16;
-        let w = state.board.white.points() as i16;
+        let b = state.board.black.occupied.popcnt() as i16;
+        let w = state.board.black.occupied.popcnt() as i16;
 
         const KOMI: i16 = 1;
-        let score = b - w - KOMI;
+        let score = (b - w) * 2 - KOMI;
         match state.current {
             Color::Black => score,
             Color::White => -score,
@@ -37,8 +37,8 @@ fn iterative_opts() -> IterativeOptions {
         // Message:  index out of bounds: the len is 1725 but the index is 1889
         // Location: /Users/tmarsh/.cargo/registry/src/index.crates.io-6f17d22bba15001f/minimax-0.5.3/src/strategies/table.rs:407
         //
-        // .with_countermoves()
-        // .with_countermove_history()
+        //.with_countermoves()
+        //.with_countermove_history()
         .verbose()
 }
 

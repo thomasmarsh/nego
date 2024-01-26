@@ -13,9 +13,9 @@ pub fn demo_minimax() {
     loop {
         state.dump();
         let new_state_opt = if s == 0 {
-            agent::AIPlayer::Random.step(&state, timeout)
+            agent::Agent::Random.step(&state)
         } else {
-            agent::AIPlayer::Iterative.step(&state, timeout)
+            agent::Agent::Iterative(timeout).step(&state)
         };
         s = 1 - s;
 

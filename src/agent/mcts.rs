@@ -15,6 +15,7 @@ impl RolloutPolicy for Policy {
         moves: &mut Vec<<Nego as Game>::M>,
         rng: &mut rand::rngs::ThreadRng,
     ) -> <Nego as Game>::M {
+        assert!(moves.is_empty());
         state.get_moves(moves);
         // TODO:
         // - wieghted random choice
@@ -22,6 +23,7 @@ impl RolloutPolicy for Policy {
         // - prefer moves that block potential connections
         // - prefer moves that connect territory
         // - prefer moves that create territory
+        // - add randomness for exploration?
         *moves.choose(rng).unwrap()
     }
 }

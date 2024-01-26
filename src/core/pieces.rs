@@ -99,7 +99,7 @@ impl PieceTypeId {
         }
     }
 
-    pub fn notation(&self) -> String {
+    pub fn notation(self) -> String {
         match self {
             PieceTypeId::Boss => "BOS",
             PieceTypeId::Mame => "MAM",
@@ -113,6 +113,21 @@ impl PieceTypeId {
             PieceTypeId::Kunoji4 => "KJ4",
         }
         .to_string()
+    }
+
+    pub fn to_piece_id(self) -> PieceId {
+        match self {
+            PieceTypeId::Boss => PieceId::Boss,
+            PieceTypeId::Mame => PieceId::Mame,
+            PieceTypeId::Nobi => PieceId::Nobi,
+            PieceTypeId::Koubaku1 => PieceId::Koubaku1,
+            PieceTypeId::Koubaku2 => PieceId::Koubaku2,
+            PieceTypeId::Koubaku3 => PieceId::Koubaku3a,
+            PieceTypeId::Kunoji1 => PieceId::Kunoji1a,
+            PieceTypeId::Kunoji2 => PieceId::Kunoji2,
+            PieceTypeId::Kunoji3 => PieceId::Kunoji3,
+            PieceTypeId::Kunoji4 => PieceId::Kunoji4,
+        }
     }
 }
 
