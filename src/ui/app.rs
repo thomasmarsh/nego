@@ -1,4 +1,4 @@
-use comfy::*;
+use comfy::{egui, EngineContext, EngineState, GameLoop};
 
 use crate::{
     agent::Agent,
@@ -8,7 +8,7 @@ use crate::{
     },
     ui::{
         draw, piece,
-        worker::{ThreadState, WorkerState},
+        worker::{Worker, WorkerState},
     },
 };
 
@@ -16,7 +16,7 @@ use crate::{
 pub struct Konego {
     pub state: game::State,
     pub ui: UIState,
-    pub thread_state: ThreadState,
+    pub worker: Worker,
 }
 
 #[derive(Debug)]
@@ -88,37 +88,17 @@ impl Konego {
         }
     }
 
-    fn spawn_worker(&mut self) {
-        self.thread_state.set_working();
-
-        let work = self.state.clone();
-        let agent = self.current_agent();
-
-        let thread_state = self.thread_state.clone();
-
-        _ = std::thread::spawn(move || {
-            if let Some(state) = agent.step(&work) {
-                thread_state.set_ready(state);
-            } else {
-                println!("Score:");
-                println!("- black: {}", work.board.black.occupied.popcnt());
-                println!("- white: {}", work.board.white.occupied.popcnt());
-                thread_state.set_done();
-            }
-        });
-    }
-
     fn finalize_work(&mut self) {
-        self.state = self.thread_state.set_and_fetch(WorkerState::Idle);
+        self.state = self.worker.set_idle_and_fetch();
         self.state.dump();
     }
 
     fn update_state(&mut self) {
         if !self.current_agent().is_human() {
-            let state = self.thread_state.get();
+            let state = self.worker.get_state();
             self.ui.show_spinner = state == WorkerState::Working;
             match state {
-                WorkerState::Idle => self.spawn_worker(),
+                WorkerState::Idle => self.worker.spawn(self.state.clone(), self.current_agent()),
                 WorkerState::Working => (),
                 WorkerState::Ready => self.finalize_work(),
                 WorkerState::Done => (),
@@ -131,19 +111,19 @@ impl Konego {
             return;
         }
         let square_size = 80;
-        let Vec2 { x: mx, y: my } = mouse_screen();
+        let comfy::Vec2 { x: mx, y: my } = comfy::mouse_screen();
         let index = |n: f32| ((n + 40.) / square_size as f32).floor() as i32;
         let (ix, iy) = (index(mx) - 1, index(my) - 1);
         if (0..8).contains(&ix) && (0..8).contains(&iy) {
             let snap = |n: f32| (index(n) * square_size) as f32;
-            let snapped_pos = Vec2::new(snap(mx), snap(my));
-            draw_rect(
-                screen_to_world(snapped_pos),
-                screen_to_world(Vec2::new(
-                    screen_width() / 2.0 + square_size as f32,
-                    screen_height() / 2.0 + square_size as f32,
+            let snapped_pos = comfy::Vec2::new(snap(mx), snap(my));
+            comfy::draw_rect(
+                comfy::screen_to_world(snapped_pos),
+                comfy::screen_to_world(comfy::Vec2::new(
+                    comfy::screen_width() / 2.0 + square_size as f32,
+                    comfy::screen_height() / 2.0 + square_size as f32,
                 )),
-                Color::rgba8(0x10, 0xff, 0x11, 0x88),
+                comfy::Color::rgba8(0x10, 0xff, 0x11, 0x88),
                 1,
             );
         }

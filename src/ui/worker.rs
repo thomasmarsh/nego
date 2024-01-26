@@ -1,4 +1,4 @@
-use crate::core::game;
+use crate::{agent::Agent, core::game};
 
 use std::sync::{Arc, Mutex};
 
@@ -12,9 +12,9 @@ pub enum WorkerState {
 }
 
 #[derive(Debug)]
-pub struct ThreadData {
-    pub new_state: game::State,
-    pub worker_state: WorkerState,
+struct ThreadData {
+    new_state: game::State,
+    worker_state: WorkerState,
 }
 
 impl ThreadData {
@@ -27,40 +27,56 @@ impl ThreadData {
 }
 
 #[derive(Clone, Debug)]
-pub struct ThreadState(Arc<Mutex<ThreadData>>);
+pub struct Worker(Arc<Mutex<ThreadData>>);
 
-impl Default for ThreadState {
+impl Default for Worker {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl ThreadState {
+impl Worker {
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(ThreadData::new())))
     }
 
-    pub fn get(&self) -> WorkerState {
+    pub fn get_state(&self) -> WorkerState {
         self.0.lock().unwrap().worker_state
     }
 
-    pub fn set_ready(&self, state: game::State) {
+    pub fn set_idle_and_fetch(&self) -> game::State {
+        let mut lock = self.0.lock().unwrap();
+        lock.worker_state = WorkerState::Idle;
+        lock.new_state.clone()
+    }
+
+    pub fn spawn(&mut self, game_state: game::State, agent: Agent) {
+        self.set_working();
+        let worker = self.clone();
+
+        _ = std::thread::spawn(move || {
+            if let Some(state) = agent.step(&game_state) {
+                worker.set_ready(state);
+            } else {
+                println!("Score:");
+                println!("- black: {}", game_state.board.black.occupied.popcnt());
+                println!("- white: {}", game_state.board.white.occupied.popcnt());
+                worker.set_done();
+            }
+        });
+    }
+
+    fn set_ready(&self, state: game::State) {
         let mut lock = self.0.lock().unwrap();
         lock.worker_state = WorkerState::Ready;
         lock.new_state = state;
     }
 
-    pub fn set_working(&self) {
+    fn set_working(&self) {
         self.0.lock().unwrap().worker_state = WorkerState::Working;
     }
 
-    pub fn set_done(&self) {
+    fn set_done(&self) {
         self.0.lock().unwrap().worker_state = WorkerState::Done;
-    }
-
-    pub fn set_and_fetch(&self, worker_state: WorkerState) -> game::State {
-        let mut lock = self.0.lock().unwrap();
-        lock.worker_state = worker_state;
-        lock.new_state.clone()
     }
 }
