@@ -39,6 +39,16 @@ impl Part {
             Part::Face(x, y) => Part::Face(dx + x, dy + y),
         }
     }
+
+    #[inline]
+    fn draw(&self, c: Color, rotation: f32) {
+        use crate::ui::draw;
+        match *self {
+            Part::Circle(x, y) => draw::circle(c, x, y),
+            Part::Face(x, y) => draw::triangle(c, x, y, rotation),
+            Part::Rect(x, y, w, h) => draw::rect(c, x, y, w, h),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -82,26 +92,23 @@ impl Parts {
     }
 
     #[inline]
-    pub fn draw(&self, c: Color, m: r#move::Move) {
-        use crate::ui::draw;
+    pub fn draw(&self, color: Color, m: r#move::Move) {
+        use Orientation::*;
+
         let coord = m.position().get_coord();
         let (dx, dy) = (coord.0 as u8, coord.1 as u8);
-
-        use Orientation::*;
-        let rotation = match m.orientation() {
+        let dir = m.orientation();
+        let rotation = match dir {
             S => 0.,
             W => -90.,
             N => 180.,
             E => 90.,
         };
-        self.facing(m.orientation())
+
+        self.facing(dir)
             .0
             .iter()
-            .for_each(|part| match *part {
-                Part::Circle(x, y) => draw::circle(c, dx + x, dy + y),
-                Part::Face(x, y) => draw::triangle(c, dx + x, dy + y, rotation),
-                Part::Rect(x, y, w, h) => draw::rect(c, dx + x, dy + y, w, h),
-            });
+            .for_each(|part| part.translate(dx, dy).draw(color, rotation));
     }
 }
 
