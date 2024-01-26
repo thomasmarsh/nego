@@ -6,47 +6,11 @@ use crate::{
         game::{self, Color::*},
         ray::Rays,
     },
-    ui::{draw, piece},
+    ui::{
+        draw, piece,
+        worker::{ThreadState, WorkerState},
+    },
 };
-
-#[derive(Clone, Debug)]
-pub struct ThreadState(Arc<Mutex<ThreadData>>);
-
-impl Default for ThreadState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ThreadState {
-    fn new() -> Self {
-        Self(Arc::new(Mutex::new(ThreadData::new())))
-    }
-
-    fn get(&self) -> WorkerState {
-        self.0.lock().worker_state
-    }
-
-    fn set_ready(&self, state: game::State) {
-        let mut lock = self.0.lock();
-        lock.worker_state = WorkerState::Ready;
-        lock.new_state = state;
-    }
-
-    fn set_working(&self) {
-        self.0.lock().worker_state = WorkerState::Working;
-    }
-
-    fn set_done(&self) {
-        self.0.lock().worker_state = WorkerState::Done;
-    }
-
-    fn set_and_fetch(&self, worker_state: WorkerState) -> game::State {
-        let mut lock = self.0.lock();
-        lock.worker_state = worker_state;
-        lock.new_state.clone()
-    }
-}
 
 #[derive(Debug, Default)]
 pub struct Konego {
@@ -74,30 +38,6 @@ impl UIState {
             show_spinner: false,
             agent_black: Agent::Iterative(std::time::Duration::from_secs(5)),
             agent_white: Agent::Parallel(std::time::Duration::from_secs(5)),
-        }
-    }
-}
-
-#[repr(u8)]
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum WorkerState {
-    Idle,
-    Working,
-    Ready,
-    Done,
-}
-
-#[derive(Debug)]
-pub struct ThreadData {
-    pub new_state: game::State,
-    pub worker_state: WorkerState,
-}
-
-impl ThreadData {
-    fn new() -> Self {
-        Self {
-            new_state: game::State::new(),
-            worker_state: WorkerState::Idle,
         }
     }
 }
