@@ -197,5 +197,10 @@ be removed from the baord.
 Draws are possible, and perhaps even likely. The rules disallow placing the
 boss on the center, presumably to reduce the first move advantage. However,
 it's unclear (to me) that the center position is the strongest opening move.
-Currently the engine does not implement komi, but will make it likely make it
-optional in in the future.
+The engine currently assigns komi of 0.5 to prevent draws.
+
+### Can a player pass?
+
+The rules do not stipulate whether a player may pass, so it is assumed they may
+not. Passing might be useful in some rare cases and null moves are utilized in
+some types of minimax searches.
