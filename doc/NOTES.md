@@ -63,8 +63,7 @@ with tuning and optimizing minimax approaches, so the current configuration is a
 bit of guesswork for now.
 
 minimax-rs has some great information in its comments, but it has some bugs and
-is underdocumented in places. It is being used in [Nokamute](https://github.com/
-edre/nokamute), but apparently nowhere else in GitHub.
+is underdocumented in places. It is being used in [Nokamute](https://github.com/edre/nokamute), but apparently nowhere else in GitHub.
 
 The version of minimax-rs we use is forked from an older version which doesn't
 include a number of enhancements. Since the last update to 
