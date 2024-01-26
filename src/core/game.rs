@@ -354,6 +354,12 @@ pub struct State {
     pub capture_flag: bool,
 }
 
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl State {
     #[inline]
     pub fn new() -> State {
