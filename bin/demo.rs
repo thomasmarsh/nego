@@ -12,16 +12,14 @@ pub fn demo_minimax() {
     let timeout = std::time::Duration::from_secs(60);
     loop {
         state.dump();
-        let new_state_opt = if s == 0 {
-            agent::Agent::Random.step(&state)
+        let m = if s == 0 {
+            agent::Agent::Random.step(&mut state)
         } else {
-            agent::Agent::Iterative(timeout).step(&state)
+            agent::Agent::Iterative(timeout).step(&mut state)
         };
         s = 1 - s;
 
-        if let Some(new_state) = new_state_opt {
-            state = new_state;
-        } else {
+        if m.is_none() {
             break;
         }
     }

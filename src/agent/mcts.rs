@@ -1,5 +1,5 @@
 use crate::agent::Nego;
-use crate::core::game::State;
+use crate::core::{game::State, r#move::Move};
 
 use minimax::{Game, MCTSOptions, MonteCarloTreeSearch, RolloutPolicy, Strategy};
 
@@ -28,7 +28,7 @@ impl RolloutPolicy for Policy {
     }
 }
 
-pub fn step(state: &State, timeout: std::time::Duration) -> Option<State> {
+pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
     let opts = MCTSOptions::default()
         .verbose()
         .with_rollouts_before_expanding(5);
@@ -37,11 +37,5 @@ pub fn step(state: &State, timeout: std::time::Duration) -> Option<State> {
         MonteCarloTreeSearch::new_with_policy(opts, Box::new(Policy));
 
     strategy.set_timeout(timeout);
-
-    let mut new_state = state.clone();
-    strategy
-        .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m));
-
-    Some(new_state)
+    strategy.choose_move(state)
 }

@@ -1,4 +1,4 @@
-use crate::{agent::Agent, core::game};
+use crate::{agent::Agent, core::game, core::r#move::Move};
 
 use std::sync::{Arc, Mutex};
 
@@ -14,6 +14,7 @@ pub enum WorkerState {
 #[derive(Debug)]
 struct ThreadData {
     new_state: game::State,
+    last_move: Option<Move>,
     worker_state: WorkerState,
 }
 
@@ -22,6 +23,7 @@ impl ThreadData {
         Self {
             new_state: game::State::new(),
             worker_state: WorkerState::Idle,
+            last_move: None,
         }
     }
 }
@@ -44,19 +46,20 @@ impl Worker {
         self.0.lock().unwrap().worker_state
     }
 
-    pub fn set_idle_and_fetch(&self) -> game::State {
+    pub fn set_idle_and_fetch(&self) -> (game::State, Option<Move>) {
         let mut lock = self.0.lock().unwrap();
         lock.worker_state = WorkerState::Idle;
-        lock.new_state.clone()
+        (lock.new_state.clone(), lock.last_move)
     }
 
-    pub fn spawn(&mut self, game_state: game::State, agent: Agent) {
+    pub fn spawn(&mut self, state: &game::State, agent: Agent) {
         self.set_working();
+        let mut game_state = state.clone();
         let worker = self.clone();
 
         _ = std::thread::spawn(move || {
-            if let Some(state) = agent.step(&game_state) {
-                worker.set_ready(state);
+            if let Some(m) = agent.step(&mut game_state) {
+                worker.set_ready(game_state, m);
             } else {
                 println!("Score:");
                 println!("- black: {}", game_state.board.black.occupied.popcnt());
@@ -66,10 +69,11 @@ impl Worker {
         });
     }
 
-    fn set_ready(&self, state: game::State) {
+    fn set_ready(&self, state: game::State, m: Move) {
         let mut lock = self.0.lock().unwrap();
         lock.worker_state = WorkerState::Ready;
         lock.new_state = state;
+        lock.last_move = Some(m);
     }
 
     fn set_working(&self) {

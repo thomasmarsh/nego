@@ -27,18 +27,23 @@ impl Agent {
         }
     }
 
-    pub fn step(&self, state: &State) -> Option<State> {
+    pub fn step(&self, state: &mut State) -> Option<Move> {
         if Nego::get_winner(state).is_some() {
             return None;
         }
 
-        match self {
+        let result = match self {
             Agent::Parallel(timeout) => negamax::step_parallel(state, *timeout),
             Agent::Iterative(timeout) => negamax::step_iterative(state, *timeout),
             Agent::Mcts(timeout) => mcts::step(state, *timeout),
             Agent::Random => step_random(state),
             Agent::Human => None,
+        };
+
+        if let Some(m) = result {
+            state.apply(m);
         }
+        result
     }
 }
 
@@ -98,7 +103,7 @@ impl minimax::Game for Nego {
     }
 }
 
-pub fn step_random(state: &State) -> Option<State> {
+pub fn step_random(state: &State) -> Option<Move> {
     use rand::Rng;
     let mut rng = rand::thread_rng();
 
@@ -108,7 +113,5 @@ pub fn step_random(state: &State) -> Option<State> {
         return None;
     }
     let idx: usize = rng.gen_range(0..ms.len());
-    let mut new_state = state.clone();
-    new_state.apply(ms[idx]);
-    Some(new_state)
+    Some(ms[idx])
 }

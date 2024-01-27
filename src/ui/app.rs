@@ -4,6 +4,7 @@ use crate::{
     agent::Agent,
     core::{
         game::{self, Color::*},
+        r#move::Move,
         ray::Rays,
     },
     ui::{
@@ -12,9 +13,45 @@ use crate::{
     },
 };
 
+// TODO: make this a tree. For now a history stack.
+#[derive(Debug)]
+pub struct History {
+    current: game::State,
+    moves: Vec<Move>,
+    states: Vec<game::State>,
+}
+
+impl History {
+    fn new() -> History {
+        History {
+            current: game::State::new(),
+            moves: Vec::new(),
+            states: Vec::new(),
+        }
+    }
+
+    fn last(&self) -> &game::State {
+        &self.current
+    }
+
+    fn push(&mut self, value: (game::State, Option<Move>)) {
+        if let Some(m) = value.1 {
+            self.moves.push(m);
+        }
+        self.states.push(self.current.clone());
+        self.current = value.0;
+    }
+}
+
+impl Default for History {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Konego {
-    pub state: game::State,
+    pub history: History,
     pub ui: UIState,
     pub worker: Worker,
 }
@@ -66,8 +103,8 @@ fn draw_player(state: &game::PlayerState, color: game::Color) {
 impl Konego {
     fn draw(&self) {
         draw::board();
-        draw_player(&self.state.board.black, Black);
-        draw_player(&self.state.board.white, White);
+        draw_player(&self.history.last().board.black, Black);
+        draw_player(&self.history.last().board.white, White);
         self.right_panel();
     }
 
@@ -82,15 +119,21 @@ impl Konego {
     }
 
     fn current_agent(&self) -> Agent {
-        match self.state.current {
+        match self.history.last().current {
             Black => self.ui.agent_black,
             White => self.ui.agent_white,
         }
     }
 
     fn finalize_work(&mut self) {
-        self.state = self.worker.set_idle_and_fetch();
-        self.state.dump();
+        self.history.push(self.worker.set_idle_and_fetch());
+        self.history.last().dump();
+        print!("history");
+        self.history
+            .moves
+            .iter()
+            .for_each(|m| print!(" {}", m.notation()));
+        println!();
     }
 
     fn update_state(&mut self) {
@@ -98,7 +141,7 @@ impl Konego {
             let state = self.worker.get_state();
             self.ui.show_spinner = state == WorkerState::Working;
             match state {
-                WorkerState::Idle => self.worker.spawn(self.state.clone(), self.current_agent()),
+                WorkerState::Idle => self.worker.spawn(self.history.last(), self.current_agent()),
                 WorkerState::Working => (),
                 WorkerState::Ready => self.finalize_work(),
                 WorkerState::Done => (),

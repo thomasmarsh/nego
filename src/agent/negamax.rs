@@ -1,9 +1,12 @@
 use crate::{
     agent::Nego,
-    core::game::{Color, State},
+    core::{
+        game::{Color, State},
+        r#move::Move,
+    },
 };
 
-use minimax::{Game, IterativeOptions, IterativeSearch, ParallelOptions, ParallelSearch, Strategy};
+use minimax::{IterativeOptions, IterativeSearch, ParallelOptions, ParallelSearch, Strategy};
 
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
@@ -67,24 +70,18 @@ pub fn step<S>(
     state: &State,
     timeout: std::time::Duration,
     strategy: &mut MutexGuard<'static, S>,
-) -> Option<State>
+) -> Option<Move>
 where
     S: Strategy<Nego>,
 {
     strategy.set_timeout(timeout);
-
-    let mut new_state = state.clone();
-    strategy
-        .choose_move(&new_state)
-        .and_then(|m| Nego::apply(&mut new_state, m));
-
-    Some(new_state)
+    strategy.choose_move(state)
 }
 
-pub fn step_iterative(state: &State, timeout: std::time::Duration) -> Option<State> {
+pub fn step_iterative(state: &State, timeout: std::time::Duration) -> Option<Move> {
     step(state, timeout, &mut get_iterative_agent())
 }
 
-pub fn step_parallel(state: &State, timeout: std::time::Duration) -> Option<State> {
+pub fn step_parallel(state: &State, timeout: std::time::Duration) -> Option<Move> {
     step(state, timeout, &mut get_parallel_agent())
 }
