@@ -31,6 +31,7 @@ impl RolloutPolicy for Policy {
 pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
     let opts = MCTSOptions::default()
         .verbose()
+        .with_max_rollout_depth(1000)
         .with_rollouts_before_expanding(5);
 
     let mut strategy: MonteCarloTreeSearch<Nego> =

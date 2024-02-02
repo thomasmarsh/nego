@@ -40,8 +40,8 @@ fn iterative_opts() -> IterativeOptions {
         // Message:  index out of bounds: the len is 1725 but the index is 1889
         // Location: /Users/tmarsh/.cargo/registry/src/index.crates.io-6f17d22bba15001f/minimax-0.5.3/src/strategies/table.rs:407
         //
-        //.with_countermoves()
-        //.with_countermove_history()
+        .with_countermoves()
+        .with_countermove_history()
         .verbose()
 }
 

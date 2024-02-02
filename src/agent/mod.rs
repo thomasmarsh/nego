@@ -1,9 +1,9 @@
 pub mod mcts;
+pub mod mcts2;
 pub mod negamax;
 
 use crate::core::{
     game::{Color, State},
-    pieces::PieceTypeId,
     r#move::Move,
 };
 
@@ -14,6 +14,7 @@ pub enum Agent {
     Parallel(std::time::Duration),
     Iterative(std::time::Duration),
     Mcts(std::time::Duration),
+    Mcts2(std::time::Duration),
     Random,
     Human,
 }
@@ -36,6 +37,7 @@ impl Agent {
             Agent::Parallel(timeout) => negamax::step_parallel(state, *timeout),
             Agent::Iterative(timeout) => negamax::step_iterative(state, *timeout),
             Agent::Mcts(timeout) => mcts::step(state, *timeout),
+            Agent::Mcts2(timeout) => mcts2::step(state, *timeout),
             Agent::Random => step_random(state),
             Agent::Human => None,
         };
@@ -80,8 +82,9 @@ impl minimax::Game for Nego {
 
     #[inline]
     fn apply(state: &mut State, m: Move) -> Option<State> {
+        let mut state = state.clone();
         state.apply(m);
-        None
+        Some(state)
     }
 
     #[inline]
@@ -98,8 +101,9 @@ impl minimax::Game for Nego {
     }
 
     fn max_table_index() -> u16 {
-        let p = PieceTypeId::Kunoji4.def();
-        (p.lut_offset + p.moves) as u16
+        u16::MAX
+        //let p = PieceTypeId::Kunoji4.def();
+        //(p.lut_offset + p.moves) as u16
     }
 }
 

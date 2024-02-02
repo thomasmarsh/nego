@@ -1,9 +1,11 @@
-use comfy::{egui, EngineContext, EngineState, GameLoop};
+use comfy::{egui, is_key_pressed, EngineContext, EngineState, GameLoop};
 
 use crate::{
     agent::Agent,
     core::{
         game::{self, Color::*},
+        orientation::Orientation,
+        pieces::{PieceId, PieceList, ALL_PIECES_IDS},
         r#move::Move,
         ray::Rays,
     },
@@ -14,15 +16,15 @@ use crate::{
 };
 
 // TODO: make this a tree. For now a history stack.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct History {
-    current: game::State,
-    moves: Vec<Move>,
-    states: Vec<game::State>,
+    pub current: game::State,
+    pub moves: Vec<Move>,
+    pub states: Vec<game::State>,
 }
 
 impl History {
-    fn new() -> History {
+    pub fn new() -> History {
         History {
             current: game::State::new(),
             moves: Vec::new(),
@@ -30,11 +32,11 @@ impl History {
         }
     }
 
-    fn last(&self) -> &game::State {
+    pub fn last(&self) -> &game::State {
         &self.current
     }
 
-    fn push(&mut self, value: (game::State, Option<Move>)) {
+    pub fn push(&mut self, value: (game::State, Option<Move>)) {
         if let Some(m) = value.1 {
             self.moves.push(m);
         }
@@ -57,10 +59,60 @@ pub struct Konego {
 }
 
 #[derive(Debug)]
+pub struct UserActivity {
+    pub piece_list: PieceList,
+    pub current_piece: PieceId, // Index into PieceList
+    pub current_orientation: Orientation,
+}
+
+impl PieceId {
+    fn next(self) -> PieceId {
+        let n = self as u16;
+        PieceId::from_index((n + 1) % (*ALL_PIECES_IDS.last().unwrap() as u16 + 1)).unwrap()
+    }
+}
+
+impl PieceList {
+    fn first(self) -> Option<PieceId> {
+        if self.is_empty() {
+            None
+        } else {
+            self.next(*ALL_PIECES_IDS.last().unwrap())
+        }
+    }
+
+    fn next(self, current: PieceId) -> Option<PieceId> {
+        let mut p = current.next();
+        loop {
+            if self.holding(p) {
+                return Some(p);
+            }
+            p = p.next();
+            if p == current {
+                break;
+            }
+        }
+        None
+    }
+}
+
+impl UserActivity {
+    fn new(piece_list: PieceList) -> UserActivity {
+        assert!(!piece_list.is_empty());
+        UserActivity {
+            piece_list,
+            current_piece: piece_list.first().unwrap(),
+            current_orientation: Orientation::S,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct UIState {
     show_spinner: bool,
     agent_black: Agent,
     agent_white: Agent,
+    user: Option<UserActivity>,
 }
 
 impl Default for UIState {
@@ -73,8 +125,10 @@ impl UIState {
     fn new() -> Self {
         Self {
             show_spinner: false,
-            agent_black: Agent::Iterative(std::time::Duration::from_secs(5)),
-            agent_white: Agent::Parallel(std::time::Duration::from_secs(5)),
+            agent_black: Agent::Mcts2(std::time::Duration::from_secs(60)),
+            // agent_white: Agent::Human,
+            agent_white: Agent::Mcts(std::time::Duration::from_secs(60)),
+            user: None,
         }
     }
 }
@@ -134,6 +188,19 @@ impl Konego {
             .iter()
             .for_each(|m| print!(" {}", m.notation()));
         println!();
+
+        if self.current_agent().is_human() {
+            let piece_list = match self.history.current.current {
+                Black => self.history.current.board.black.hand,
+                White => self.history.current.board.white.hand,
+            };
+            self.ui.user = Some(UserActivity::new(piece_list));
+            let user = self.ui.user.as_ref().unwrap();
+            println!(
+                "current: {:?} {:?}",
+                user.current_piece, user.current_orientation
+            );
+        }
     }
 
     fn update_state(&mut self) {
@@ -149,7 +216,7 @@ impl Konego {
         }
     }
 
-    fn user_input(&self) {
+    fn user_input(&mut self) {
         if !self.current_agent().is_human() {
             return;
         }
@@ -169,6 +236,29 @@ impl Konego {
                 comfy::Color::rgba8(0x10, 0xff, 0x11, 0x88),
                 1,
             );
+        }
+
+        if is_key_pressed(comfy::KeyCode::A) {
+            let user: &mut UserActivity = self.ui.user.as_mut().unwrap();
+            if true {
+                // user.current_piece != PieceId::Boss {
+                user.current_piece = user.piece_list.next(user.current_piece).unwrap();
+                println!(
+                    "current: {:?} {:?}",
+                    user.current_piece, user.current_orientation
+                );
+            }
+        }
+        if is_key_pressed(comfy::KeyCode::Z) {
+            let user: &mut UserActivity = self.ui.user.as_mut().unwrap();
+            if true {
+                //user.current_piece != PieceId::Boss {
+                user.current_orientation = user.current_orientation.right();
+                println!(
+                    "current: {:?} {:?}",
+                    user.current_piece, user.current_orientation
+                );
+            }
         }
     }
 }

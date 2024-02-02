@@ -200,6 +200,11 @@ impl PieceList {
     }
 
     #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    #[inline]
     pub fn available(self) -> PieceList {
         if self.holding(PieceId::Boss) {
             PieceList(1)
