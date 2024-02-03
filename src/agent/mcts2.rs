@@ -63,10 +63,6 @@ impl Game for Nego {
         }
     }
 
-    fn player_just_moved(state: &Self::S) -> Self::P {
-        state.current.next()
-    }
-
     fn player_to_move(state: &Self::S) -> Self::P {
         state.current
     }
