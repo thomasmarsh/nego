@@ -38,10 +38,6 @@ impl Game for Nego {
         !state.has_moves()
     }
 
-    fn empty_move(_: &Self::S) -> Self::M {
-        Move::new(crate::core::pieces::PieceId::Boss, LUTEntry(0))
-    }
-
     fn notation(_: &Self::S, m: &Self::M) -> String {
         m.notation()
     }

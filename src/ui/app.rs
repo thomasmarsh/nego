@@ -125,9 +125,9 @@ impl UIState {
     fn new() -> Self {
         Self {
             show_spinner: false,
-            agent_black: Agent::Mcts2(std::time::Duration::from_secs(5)),
+            agent_white: Agent::Mcts2(std::time::Duration::from_secs(60)),
             // agent_white: Agent::Human,
-            agent_white: Agent::Mcts(std::time::Duration::from_secs(5)),
+            agent_black: Agent::Mcts(std::time::Duration::from_secs(60)),
             user: None,
         }
     }
