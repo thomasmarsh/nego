@@ -11,7 +11,7 @@ use crate::core::{
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Move(u16);
 
 impl Move {

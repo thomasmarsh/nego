@@ -1,17 +1,31 @@
 use std::cmp::Ordering;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
-use crate::core::{game::Color, game::State, move_tab::LUTEntry, r#move::Move};
+use crate::core::{game::Color, game::State, r#move::Move};
 
 use mcts::game::Game;
-use mcts::strategies::mcts::TreeSearchStrategy;
+use mcts::strategies::mcts::TreeSearch;
 use mcts::strategies::Strategy;
 
-type NegoTS = TreeSearchStrategy<Nego>;
+type NegoTS = TreeSearch<Nego>;
+
+static MCTS_CELL: OnceLock<Mutex<NegoTS>> = OnceLock::new();
+
+fn get_agent() -> MutexGuard<'static, NegoTS> {
+    MCTS_CELL
+        .get_or_init(|| {
+            let mut mcts = NegoTS::new();
+            mcts.set_verbose();
+            Mutex::new(mcts)
+        })
+        .lock()
+        .unwrap()
+}
 
 pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
-    let mut mcts = NegoTS::new();
-    mcts.set_verbose();
-    mcts.set_timeout(timeout);
+    let mut mcts = get_agent();
+    // mcts.set_timeout(timeout);
+    mcts.set_max_rollouts(40000);
     mcts.choose_move(state)
 }
 
