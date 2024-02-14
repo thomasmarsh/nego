@@ -37,7 +37,7 @@ pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
     let mut strategy: MonteCarloTreeSearch<Nego> =
         MonteCarloTreeSearch::new_with_policy(opts, Box::new(Policy));
 
-    strategy.set_max_rollouts(40000);
-    // strategy.set_timeout(timeout);
+    // strategy.set_max_rollouts(40000);
+    strategy.set_timeout(timeout);
     strategy.choose_move(state)
 }

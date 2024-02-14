@@ -8,10 +8,11 @@ use crate::core::{
     square::Square,
 };
 
+use serde::Serialize;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Move(u16);
 
 impl Move {
