@@ -5,28 +5,33 @@ use crate::core::{game::Color, game::State, r#move::Move};
 
 use mcts::game::{Game, PlayerIndex};
 use mcts::strategies::mcts::select;
-use mcts::strategies::mcts::{util, SearchConfig, TreeSearch};
+use mcts::strategies::mcts::{strategy, SearchConfig, TreeSearch};
 use mcts::strategies::Search;
 
-type NegoTS = TreeSearch<Nego, util::Ucb1Tuned>;
+#[derive(Clone, Copy, Default)]
+struct NegoStrategy;
+
+type NegoTS = TreeSearch<Nego, strategy::Ucb1TunedDM>;
 
 static MCTS_CELL: OnceLock<Mutex<NegoTS>> = OnceLock::new();
 
+fn build_ts() -> NegoTS {
+    NegoTS::default()
+        .config(
+            SearchConfig::default()
+                .expand_threshold(2)
+                .max_iterations(usize::MAX)
+                .use_transpositions(true)
+                .select(select::Ucb1Tuned {
+                    exploration_constant: 1.625,
+                }),
+        )
+        .verbose(true)
+}
+
 fn get_agent() -> MutexGuard<'static, NegoTS> {
     MCTS_CELL
-        .get_or_init(|| {
-            let mcts = NegoTS::default()
-                .config(
-                    SearchConfig::default()
-                        .expand_threshold(2)
-                        .max_iterations(usize::MAX)
-                        .select(select::Ucb1Tuned {
-                            exploration_constant: 1.625,
-                        }),
-                )
-                .verbose(true);
-            Mutex::new(mcts)
-        })
+        .get_or_init(|| Mutex::new(build_ts()))
         .lock()
         .unwrap()
 }
@@ -88,6 +93,10 @@ impl Game for Nego {
 
     fn player_to_move(state: &Self::S) -> Self::P {
         state.current
+    }
+
+    fn zobrist_hash(state: &Self::S) -> u64 {
+        state.hash
     }
 }
 
