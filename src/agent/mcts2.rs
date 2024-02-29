@@ -22,6 +22,7 @@ impl Strategy<Nego> for NegoStrategy {
             .expand_threshold(1)
             .use_transpositions(true)
             .select(select::Amaf::with_c(1.625))
+            .verbose(true)
     }
 
     fn friendly_name() -> String {
@@ -35,7 +36,7 @@ static MCTS_CELL: OnceLock<Mutex<NegoTS>> = OnceLock::new();
 
 fn get_agent() -> MutexGuard<'static, NegoTS> {
     MCTS_CELL
-        .get_or_init(|| Mutex::new(NegoTS::new().verbose(true)))
+        .get_or_init(|| Mutex::new(NegoTS::new()))
         .lock()
         .unwrap()
 }
