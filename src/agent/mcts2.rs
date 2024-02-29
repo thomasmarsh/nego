@@ -4,34 +4,38 @@ use std::sync::{Mutex, MutexGuard, OnceLock};
 use crate::core::{game::Color, game::State, r#move::Move};
 
 use mcts::game::{Game, PlayerIndex};
-use mcts::strategies::mcts::select;
-use mcts::strategies::mcts::{strategy, SearchConfig, TreeSearch};
+use mcts::strategies::mcts::{backprop, select, simulate, Strategy};
+use mcts::strategies::mcts::{SearchConfig, TreeSearch};
 use mcts::strategies::Search;
 
 #[derive(Clone, Copy, Default)]
 struct NegoStrategy;
 
-type NegoTS = TreeSearch<Nego, strategy::Ucb1TunedDM>;
+impl Strategy<Nego> for NegoStrategy {
+    type Select = select::Amaf;
+    type Simulate = simulate::DecisiveMove<Nego, simulate::EpsilonGreedy<Nego, simulate::Mast>>;
+    type Backprop = backprop::Classic;
+    type FinalAction = select::MaxAvgScore;
+
+    fn config() -> SearchConfig<Nego, Self> {
+        SearchConfig::new()
+            .expand_threshold(1)
+            .use_transpositions(true)
+            .select(select::Amaf::with_c(1.625))
+    }
+
+    fn friendly_name() -> String {
+        "mcts: amaf/dm+mast/maxavg".into()
+    }
+}
+
+type NegoTS = TreeSearch<Nego, NegoStrategy>;
 
 static MCTS_CELL: OnceLock<Mutex<NegoTS>> = OnceLock::new();
 
-fn build_ts() -> NegoTS {
-    NegoTS::default()
-        .config(
-            SearchConfig::default()
-                .expand_threshold(2)
-                .max_iterations(usize::MAX)
-                .use_transpositions(true)
-                .select(select::Ucb1Tuned {
-                    exploration_constant: 1.625,
-                }),
-        )
-        .verbose(true)
-}
-
 fn get_agent() -> MutexGuard<'static, NegoTS> {
     MCTS_CELL
-        .get_or_init(|| Mutex::new(build_ts()))
+        .get_or_init(|| Mutex::new(NegoTS::new().verbose(true)))
         .lock()
         .unwrap()
 }
@@ -39,7 +43,6 @@ fn get_agent() -> MutexGuard<'static, NegoTS> {
 pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
     let mut mcts = get_agent();
     mcts.config.max_time = timeout;
-    // mcts.strategy.max_iterations = 40000;
     Some(mcts.choose_action(state))
 }
 
