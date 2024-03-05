@@ -27,7 +27,7 @@ impl Color {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PlayerState {
     pub hand: PieceList,
     pub move_list: Vec<Move>,
@@ -149,7 +149,7 @@ impl PlayerState {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Board {
     pub black: PlayerState,
     pub white: PlayerState,
@@ -346,7 +346,7 @@ impl Board {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct State {
     pub current: Color,
     pub board: Board,

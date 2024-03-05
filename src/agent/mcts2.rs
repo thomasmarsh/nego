@@ -4,31 +4,40 @@ use std::sync::{Mutex, MutexGuard, OnceLock};
 use crate::core::{game::Color, game::State, r#move::Move};
 
 use mcts::game::{Game, PlayerIndex};
-use mcts::strategies::mcts::{backprop, select, simulate, Strategy};
+use mcts::strategies::mcts::{backprop, select, simulate, strategy, Strategy};
 use mcts::strategies::mcts::{SearchConfig, TreeSearch};
 use mcts::strategies::Search;
 
-#[derive(Clone, Copy, Default)]
-struct NegoStrategy;
+// #[derive(Clone, Copy, Default)]
+// struct NegoStrategy;
 
-impl Strategy<Nego> for NegoStrategy {
-    type Select = select::Amaf;
-    type Simulate = simulate::DecisiveMove<Nego, simulate::EpsilonGreedy<Nego, simulate::Mast>>;
-    type Backprop = backprop::Classic;
-    type FinalAction = select::MaxAvgScore;
+// impl Strategy<Nego> for NegoStrategy {
+//     type Select = select::Rave;
+//     type Simulate = simulate::DecisiveMove<Nego, simulate::EpsilonGreedy<Nego, simulate::Mast>>;
+//     type Backprop = backprop::Classic;
+//     type FinalAction = select::MaxAvgScore;
 
-    fn config() -> SearchConfig<Nego, Self> {
-        SearchConfig::new()
-            .expand_threshold(1)
-            .use_transpositions(true)
-            .select(select::Amaf::with_c(1.625))
-            .verbose(true)
-    }
+//     fn config() -> SearchConfig<Nego, Self> {
+//         SearchConfig::new()
+//             .expand_threshold(1)
+//             .use_transpositions(true)
+//             .select(
+//                 select::Rave::default()
+//                     .threshold(700)
+//                     .ucb(select::RaveUcb::Ucb1Tuned {
+//                         exploration_constant: 1.625,
+//                     })
+//                     .schedule(select::RaveSchedule::MinMSE { bias: 10e-3 }),
+//             )
+//             .verbose(true)
+//     }
 
-    fn friendly_name() -> String {
-        "mcts: amaf/dm+mast/maxavg".into()
-    }
-}
+//     fn friendly_name() -> String {
+//         "mcts: amaf/dm+mast/maxavg".into()
+//     }
+// }
+
+type NegoStrategy = strategy::Ucb1;
 
 type NegoTS = TreeSearch<Nego, NegoStrategy>;
 
@@ -36,7 +45,7 @@ static MCTS_CELL: OnceLock<Mutex<NegoTS>> = OnceLock::new();
 
 fn get_agent() -> MutexGuard<'static, NegoTS> {
     MCTS_CELL
-        .get_or_init(|| Mutex::new(NegoTS::new()))
+        .get_or_init(|| Mutex::new(NegoTS::new().config(SearchConfig::new().verbose(true))))
         .lock()
         .unwrap()
 }
@@ -50,6 +59,12 @@ pub fn step(state: &State, timeout: std::time::Duration) -> Option<Move> {
 impl PlayerIndex for Color {
     fn to_index(&self) -> usize {
         *self as usize
+    }
+}
+
+impl std::fmt::Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(&self, f)
     }
 }
 
