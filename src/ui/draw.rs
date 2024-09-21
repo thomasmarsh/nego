@@ -1,6 +1,6 @@
 use comfy::{
     clear_background, draw_circle, draw_poly_z, draw_rect, screen_height, screen_to_world,
-    screen_width, BlendMode, Color, TextureParams, Vec2,
+    screen_width, BlendMode, Color, Vec2,
 };
 
 use crate::core::game;
@@ -82,9 +82,7 @@ pub fn triangle(color: game::Color, x: u8, y: u8, r: f32) {
         -90. + r,
         from_game_color(color),
         0,
-        TextureParams {
-            blend_mode: BlendMode::Alpha,
-        },
+        comfy::BlendMode::None,
     );
 }
 
